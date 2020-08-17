@@ -1,0 +1,18 @@
+{
+  "name": "guide",
+  "version": "1.0.0",
+  "description": "users guide to ___PROJECT NAME___",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "David Herron <david@davidherron.com>",
+  "license": "ISC",
+  "dependencies": {
+    "@akashacms/plugins-base": "^0.7.11",
+    "@akashacms/plugins-blog-podcast": "^0.7.8",
+    "@akashacms/plugins-tagged-content": "^0.7.4",
+    "@akashacms/theme-bootstrap": "^0.7.10",
+    "akasharender": "^0.7.28"
+  }
+}
