@@ -1,0 +1,16 @@
+
+<ul class='list-group'>
+<%
+    for (var j = 0; j < entries.length; j++) {
+        var entry = entries[j];
+        %>
+        <li class="list-group-item">
+            <strong>
+            <a href="/<%= entry.renderpath %>"><%= 
+                entry.metadata.title
+            %></a></strong><%
+             if (entry.metadata.teaser) { %>: <%- entry.metadata.teaser %><% } %>
+        </li><%
+    }
+%>
+</ul>

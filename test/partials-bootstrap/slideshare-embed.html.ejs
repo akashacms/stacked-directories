@@ -1,0 +1,9 @@
+<div class="slideshare-embed card">
+    <div class="card-header"><h3><%= title %></h3></div>
+    <div class="card-body">
+        <p>Source: Slideshare by <a href="<%= author_url %>"><%= author %></a></p>
+        <div class="embed-responsive embed-responsive-16by9" style="clear: both;"><%- htmlEmbed %></div>
+    </div>
+</div>
+
+<slideshare-metadata href="<%= slideshare_url %>"/>

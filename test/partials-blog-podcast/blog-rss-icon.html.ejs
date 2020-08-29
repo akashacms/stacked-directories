@@ -1,0 +1,12 @@
+<a 
+   rel="alternate" 
+   type="application/rss+xml"
+   href="<%- feedUrl %>">
+        <img src="/img/rss_button.gif" align="middle" width="40px"
+        <%
+        if (typeof title !== 'undefined') {
+            %> title="<%= title %>" <%
+        }
+        %>
+        />
+</a>

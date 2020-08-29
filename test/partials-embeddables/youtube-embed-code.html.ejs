@@ -1,0 +1,21 @@
+<iframe  type="text/html" <%
+    if (width) {
+        %>width="<%= width %>" <%
+    }
+    
+    if (height) {
+        %>height="<%= height %>" <%
+    }
+    
+    if (ytclass) {
+        %>class="<%= ytclass %>" <%
+    }
+    
+    if (style) {
+        %>style="<%= style %>" <%
+    }
+    
+    if (frameborder) {
+        %>frameborder="<%= frameborder %>" <%
+    }
+    %> src="<%= yturl %>"/>

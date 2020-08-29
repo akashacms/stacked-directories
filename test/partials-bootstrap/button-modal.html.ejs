@@ -1,0 +1,27 @@
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#<%= id %>">
+  <%= buttonText %>
+</button>
+<div class="modal fade" id="<%= id %>" tabindex="-1" role="dialog" 
+            aria-labelledby="<%= id %>-title" aria-hidden="true">
+  <div class="modal-dialog <%= modelAdditionalClasses %>" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <% if (typeof title !== undefined && title !== '') { %>
+            <h5 class="modal-title" id="<%= id %>-title"><%= title %></h5>
+        <% } %>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <%- content %>
+      </div>
+      <div class="modal-footer">
+        <% if (typeof closeButtonText !== undefined && closeButtonText !== '') { %>
+            <button type="button" class="btn btn-secondary" 
+                    data-dismiss="modal"><%= closeButtonText %></button>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>

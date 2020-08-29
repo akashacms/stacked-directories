@@ -1,0 +1,23 @@
+
+<%
+    if (typeof embedData !== 'undefined' && embedData.thumbnail_url) {
+        %><opengraph-image href="<%= embedData.thumbnail_url %>"/><%
+    }
+    if (typeof embedData !== 'undefined'
+     && typeof embedData.metadata !== 'undefined'
+     && embedData.metadata.ogImage) {
+        %><opengraph-image href="<%= embedData.metadata.ogImage %>"/><%
+    }
+    if (typeof embedData !== 'undefined'
+     && typeof embedData.metadata !== 'undefined'
+     && typeof embedData.metadata.twitterImage !== 'undefined') {
+        %><opengraph-image href="<%= embedData.metadata.twitterImage %>"/><%
+    }
+    if (typeof embedData !== 'undefined'
+     && typeof embedData.metadata !== 'undefined'
+     && embedData.metadata.images) {
+        for (let img of embedData.metadata.images) {
+            %><opengraph-image href="<%= img %>"/><%
+        }
+    }
+%>

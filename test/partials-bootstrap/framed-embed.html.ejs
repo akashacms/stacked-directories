@@ -1,0 +1,10 @@
+<div class="card framed-video-player">
+    <div class="card-header"><h3><%= title %></h3></div>
+    <div class="card-body">
+        <p>Source: <a href="<%= embedUrl %>" rel="nofollow"><%= embedSource %></a></p>
+        <% if ((typeof hideDescription === "undefined" || ! hideDescription) && description) {
+                %><%= description %><%
+            } %>
+        <div class="embed-responsive embed-responsive-16by9" style="clear: both;"><%- embedCode %></div>
+    </div>
+</div>

@@ -1,0 +1,8 @@
+<div <% if (typeof id !== 'undefined') { %>id="<%= id %>" <% } %> class="clearfix">
+<% if (typeof suppressContents === 'undefined') { %>
+    <h5>Contents</h5>
+<% } %>
+<ol class="<%= additionalClasses %>">
+    <%- content %>
+</ol>
+</div>

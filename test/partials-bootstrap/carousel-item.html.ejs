@@ -1,0 +1,14 @@
+<div class="carousel-item <%= isactive %>">
+    <img src="<%= href %>" class="d-block w-100" alt="<%= alt %>"
+            width="<%= width %>" <%- resizeto %> <%- resizewidth %> <%- style %> >
+    <% if (typeof captiontitle !== 'undefined' || typeof captionbody !== 'undefined') { %>
+        <div class="carousel-caption d-none d-md-block">
+          <% if (typeof captiontitle !== 'undefined') { %>
+            <h5><%= captiontitle %></h5>
+          <% } %>
+          <% if (typeof captionbody !== 'undefined') { %>
+            <p><%= captionbody %></p>
+          <% } %>
+        </div>
+    <% } %>
+</div>

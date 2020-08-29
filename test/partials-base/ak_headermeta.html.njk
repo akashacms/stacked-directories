@@ -1,0 +1,93 @@
+
+{#
+ - Basic HTML Meta Tags - Copied from https://gist.github.com/1997924 
+ - Some documentation is on that page
+ - Other documentation is here - http://webdesign.about.com/od/metataglibraries/a/meta-tag-list.htm
+ */
+#}
+
+{% if metakeywords %}<meta name="keywords"    content="{{ metakeywords }}" />{% endif %}
+{% if metadescription %}<meta name="description" content="{{ metadescription }}" />{% endif %} 
+{% if metasubject     %}<meta name="subject"     content="{{ metasubject }}" />{% endif %} 
+{% if metacopyright   %}<meta name="copyright"   content="{{ metacopyright }}" />{% endif %} 
+{% if metalanguage    %}<meta name="language"    content="{{ metalanguage }}" />{% endif %} 
+{% if metarobots      %}<meta name="robots"      content="{{ metarobots }}" />{% endif %}
+{% if metarevised     %}<meta name="revised"     content="{{ metarevised }}" />{% endif %}
+{% if metaabstract    %}<meta name="abstract"    content="{{ metaabstract }}" />{% endif %}
+{% if metatopic       %}<meta name="topic"       content="{{ metatopic }}" />{% endif %}
+{% if metasummary     %}<meta name="summary"     content="{{ metasummary }}" />{% endif %}
+{% if metaclassification %}<meta name="Classification" content="{{ metaclassification }}" />{% endif %}
+{% if metaauthor      %}<meta name="author"      content="{{ metaauthor }}" />{% endif %}
+{% if metadesigner    %}<meta name="designer"    content="{{ metadesigner }}" />{% endif %}
+{% if metareplyTo     %}<meta name="reply-to"    content="{{ metareplyTo }}" />{% endif %}
+{% if metaowner       %}<meta name="owner"       content="{{ metaowner }}" />{% endif %}
+{% if metaurl         %}<meta name="url"         content="{{ metaurl }}" />{% endif %}
+{% if metaidentifierURL %}<meta name="identifier-URL" content="{{ metaidentifierURL }}" />{% endif %}
+{% if metadirectory   %}<meta name="directory"   content="{{ metadirectory }}" />{% endif %}
+{% if metapagename    %}<meta name="pagename"    content="{{ metapagename }}" />{% endif %}
+{% if metacategory    %}<meta name="category"    content="{{ metacategory }}" />{% endif %}
+{% if metacoverage    %}<meta name="coverage"    content="{{ metacoverage }}" />{% endif %}
+{% if metadistribution %}<meta name="distribution" content="{{ metadistribution }}" />{% endif %}
+{% if metarating      %}<meta name="rating"      content="{{ metarating }}" />{% endif %}
+{% if metarevisitAfter %}<meta name="revisit-after" content="{{ metarevisitAfter }}" />{% endif %}
+{% if metasubtitle    %}<meta name="subtitle"    content="{{ metasubtitle }}" />{% endif %}
+{% if metatarget      %}<meta name="target"      content="{{ metatarget }}" />{% endif %}
+{% if metaHandheldFriendly %}<meta name="HandheldFriendly" content="{{ metaHandheldFriendly }}" />{% endif %}
+{% if metaMobileOptimized %}<meta name="MobileOptimized" content="{{ metaMobileOptimized }}" />{% endif %}
+{% if metadate        %}<meta name="date"        content="{{ metadate }}" />{% endif %}
+{% if metasearch_date %}<meta name="search_date" content="{{ metasearch_date }}" />{% endif %}
+{% if metaDCtitle     %}<meta name="DC.title"    content="{{ metaDCtitle }}" />{% endif %}
+{% if metaResourceLoaderDynamicStyles %}<meta name="ResourceLoaderDynamicStyles" content="{{ metaResourceLoaderDynamicStyles }}" />{% endif %}
+{% if metamedium      %}<meta name="medium"      content="{{ metamedium }}" />{% endif %}
+{% if metasyndicationSource %}<meta name="syndication-source" content="{{ metasyndicationSource }}" />{% endif %}
+{% if metaoriginalSource %}<meta name="original-source" content="{{ metaoriginalSource }}" />{% endif %}
+{% if metaverifyv1    %}<meta name="verify-v1"   content="{{ metaverifyv1 }}" />{% endif %}
+{% if metay_key       %}<meta name="y_key"       content="{{ metay_key }}" />{% endif %}
+{% if metapageKey     %}<meta name="pageKey"     content="{{ metapageKey }}" />{% endif %}
+{% if metaname        %}<meta name="name"        content="{{ metaname }}" />{% endif %}
+{% if metaExpires     %}<meta name="Expires"     content="{{ metaExpires }}" />{% endif %}
+{% if metaPragma      %}<meta name="Pragma"      content="{{ metaPragma }}" />{% endif %}
+{% if metaCacheControl %}<meta name="Cache-Control" content="{{ metaCacheControl }}" />{% endif %}
+{% if metaimagetoolbar %}<meta name="imagetoolbar" content="{{ metaimagetoolbar }}" />{% endif %}
+{% if metax_dns_prefetch_control %}<meta name="x-dns-prefetch-control" content="{{ metax_dns_prefetch_control }}" />{% endif %}
+
+<!-- OpenGraph Meta Tags -->
+
+{% if metaOGtitle         %}<meta name='og:title' content='{{ metaOGtitle }}'/>{% endif %}
+{% if metaOGtype          %}<meta name='og:type'  content='{{ metaOGtype }}'/>{% endif %}
+{% if rendered_url        %}<meta name='og:url'   content='{{ rendered_url }}'/>{% endif %}
+{% if metaOGimage         %}<meta name='og:image' content='{{ metaOGimage }}'/>{% endif %}
+{% if metaOGsite_name     %}<meta name='og:site_name' content='{{ metaOGsite_name }}'/>{% endif %}
+{% if metaOGdescription   %}<meta name='og:description' content='{{ metaOGdescription }}'/>{% endif %}
+
+{% if metaOGpage_id       %}<meta name='fb:page_id' content='{{ metaOGpage_id }}'/>{% endif %}
+{% if metaOGapplicationname %}<meta name='application-name' content='{{ metaOGapplicationname }}'/>{% endif %}
+{% if metaOGemail         %}<meta name='og:email' content='{{ metaOGemail }}'/>{% endif %}
+{% if metaOGphone_number  %}<meta name='og:phone_number' content='{{ metaOGphone_number }}'/>{% endif %}
+{% if metaOGfax_number    %}<meta name='og:fax_number' content='{{ metaOGfax_number }}'/>{% endif %}
+
+{% if metaOGlatitude      %}<meta name='og:latitude' content='{{ metaOGlatitude }}'/>{% endif %}
+{% if metaOGlongitude     %}<meta name='og:longitude' content='{{ metaOGlongitude }}'/>{% endif %}
+{% if metaOGstreetaddress %}<meta name='og:street-address' content='{{ metaOGstreetaddress }}'/>{% endif %}
+{% if metaOGlocality      %}<meta name='og:locality' content='{{ metaOGlocality }}'/>{% endif %}
+{% if metaOGregion        %}<meta name='og:region' content='{{ metaOGregion }}'/>{% endif %}
+{% if metaOGpostalcode    %}<meta name='og:postal-code' content='{{ metaOGpostalcode }}'/>{% endif %}
+{% if metaOGcountryname   %}<meta name='og:country-name' content='{{ metaOGcountryname }}'/>{% endif %}
+
+{% if metaOGadmins        %}<meta property='fb:admins' content='{{ metaOGadmins }}'/>{% endif %}
+{% if metaOGproptype      %}<meta property='og:type' content='{{ metaOGproptype }}'/>{% endif %}
+{% if metaOGpoints        %}<meta property='og:points' content='{{ metaOGpoints }}'/>{% endif %}
+
+{% if metaOGvideo         %}<meta property='og:video' content='{{ metaOGvideo }}'/>{% endif %}
+{% if metaOGvideoheight   %}<meta property='og:video:height' content='{{ metaOGvideoheight }}'/>{% endif %}
+{% if metaOGvideowidth    %}<meta property='og:video:width' content='{{ metaOGvideowidth }}'/>{% endif %}
+{% if metaOGvideotype     %}<meta property='og:video:type' content='{{ metaOGvideotype }}'/>{% endif %}
+
+{% if metaOGaudio         %}<meta property='og:audio' content='{{ metaOGaudio }}'/>{% endif %}
+{% if metaOGaudiotitle    %}<meta property='og:audio:title' content='{{ metaOGaudiotitle }}'/>{% endif %}
+{% if metaOGaudioartist   %}<meta property='og:audio:artist' content='{{ metaOGaudioartist }}'/>{% endif %}
+{% if metaOGaudioalbum    %}<meta property='og:audio:album' content='{{ metaOGaudioalbum }}'/>{% endif %}
+{% if metaOGaudiotype     %}<meta property='og:audio:type' content='{{ metaOGaudiotype }}'/>{% endif %}
+
+{# http://en.wikipedia.org/wiki/Canonical_link_element #}
+{% if rendered_url %}<link rel="canonical" href="{{ rendered_url }}" />{% endif %}

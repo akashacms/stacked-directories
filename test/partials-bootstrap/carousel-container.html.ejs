@@ -1,0 +1,15 @@
+<div id="<%= id %>" class="carousel slide <%= optionalclasses %>"
+        data-ride="carousel" data-wrap="true" data-touch="true"
+        width="<%= width %>" <%- style %> >
+  <div class="carousel-inner">
+    <%- content %>
+  </div>
+  <a class="carousel-control-prev" href="#<%= id %>" role="button" data-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="sr-only">Previous</span>
+  </a>
+  <a class="carousel-control-next" href="#<%= id %>" role="button" data-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="sr-only">Next</span>
+  </a>
+</div>

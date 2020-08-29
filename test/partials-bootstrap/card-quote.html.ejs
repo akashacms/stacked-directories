@@ -1,0 +1,50 @@
+<div class="card <%= additionalClasses %>" <%
+    if (typeof id !== 'undefined' && id !== '') { %>id="<%= id %>"<% }
+    if (typeof style !== 'undefined' && style !== '') {
+        %> style="<%= style %>" <%
+    }
+    %>>
+    <% if (typeof cardImageTop !== 'undefined' && cardImageTop !== '') { %>
+        <img src="<%= cardImageTop %>" class="card-img-top" <%
+            if (typeof cardImageAlt !== 'undefined' && cardImageAlt !== '') {
+                %> alt="<%= cardImageAlt %>" <%
+            }
+            if (typeof cardImageStyle !== 'undefined' && cardImageStyle !== '') {
+                %> style="<%= cardImageStyle %>" <%
+            }
+            if (typeof cardImageResizeTo !== 'undefined' && cardImageResizeTo !== '') {
+                %> resize-to="<%= cardImageResizeTo %>" <%
+            }
+            if (typeof cardImageResizeWidth !== 'undefined' && cardImageResizeWidth !== '') {
+                %> resize-width="<%= cardImageResizeWidth %>" <%
+            }
+        %>>
+    <% } %>
+    <% if (typeof header !== 'undefined' && header !== '') { %>
+        <div class="card-header">
+            <%= header %>
+        </div>
+    <% } %>
+    <div class="card-body">
+        <% if (typeof bodyHeader !== 'undefined' && bodyHeader !== '') { %>
+            <div class="card-header">
+                <%= bodyHeader %>
+            </div>
+        <% } %>
+        <blockquote class="blockquote mb-0">
+        
+            <%- content %>
+
+            <footer class="blockquote-footer">
+                <% 
+                if (typeof quoteSource !== 'undefined' && quoteSource !== '') {
+                    %><%= quoteSource %><%
+                }
+                if (typeof quoteTitle !== '' && quoteTitle !== '') {
+                    %> in <cite title="<%= quoteTitle %>"><%= quoteTitle %></cite><%
+                }
+                %>
+            </footer>
+        </blockquote>
+    </div>
+</div>

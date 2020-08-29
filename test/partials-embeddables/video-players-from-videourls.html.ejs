@@ -1,0 +1,39 @@
+
+<%
+if (typeof videoUrls !== "undefined" && videoUrls) {
+    videoUrls.forEach(function(videoData) { %>
+        <embed-resource class="framed-video-player"
+        template="embed-resource-framed.html.ejs" <%
+            if (videoData.hideDescription) { %>data-hide-description='<%= videoData.hideDescription %>' <% }
+        %>
+        enable-responsive="yes"
+        href='<%= videoData.url %>'></embed-resource><%
+    });
+}
+if (typeof youtubeUrls !== "undefined" && youtubeUrls) {
+    youtubeUrls.forEach(function(youtubeData) { %>
+        <embed-youtube code="<%= youtubeData.code %>"
+            <% 
+            if (typeof youtubeData.title !== "undefined") {
+                %> title="<%= youtubeData.title %>" <%
+            }
+            if (typeof youtubeData.class !== "undefined") {
+                %> class="<%= youtubeData.class %>" <%
+            }
+            if (typeof youtubeData.style !== "undefined") {
+                %> style="<%= youtubeData.style %>" <%
+            }
+            if (typeof youtubeData.id !== "undefined") {
+                %> id="<%= youtubeData.id %>" <%
+            }
+            if (typeof youtubeData.template !== "undefined") {
+                %> template="<%= youtubeData.template %>" <%
+            }
+            %> >
+            <% if (typeof youtubeData.description !== "undefined") { %>
+                <div style="clear: both;"><%- youtubeData.description %></div>
+            <% } %>
+        </embed-youtube> <%
+    });
+}
+%>

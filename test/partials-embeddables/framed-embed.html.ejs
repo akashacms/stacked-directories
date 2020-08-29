@@ -1,0 +1,10 @@
+<div class="framed-video-player">
+    <h3><%= title %></h3>
+    <p>Source: <a href="<%= embedUrl %>" rel="nofollow"><%= embedSource %></a></p>
+    <% if ((typeof hideDescription === "undefined" || ! hideDescription) && description) {
+    		%><%= description %><%
+    	} %>
+    <div style="clear: both;"><%- embedCode %></div>
+</div>
+
+<!-- youtube-metadata href="<%= embedUrl %>"/ -->

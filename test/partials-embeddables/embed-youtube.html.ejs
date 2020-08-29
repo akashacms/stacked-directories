@@ -1,0 +1,32 @@
+<!-- embed-youtube.html.ejs -->
+<div 
+    <% 
+    if (typeof embedClass !== 'undefined' && embedClass) {
+        %> class="<%= embedClass %> framed-video-player" <%
+    }
+    if (typeof style !== 'undefined' && style) {
+        %> style="<%= style %>" <%
+    }
+    if (typeof id !== 'undefined' && id) {
+        %> id="<%= id %>" <%
+    } 
+    %> >
+    <% if (typeof title !== 'undefined' && title) { %>
+        <div style="clear: both;"><h3><%= title %></h3></div>
+    <% } %>
+
+    <div style="clear: both;" class="embed-responsive embed-responsive-16by9">
+        <iframe src="<%= embedURL %>" type="text/html"></iframe>
+    </div>
+
+    <% if (typeof description !== 'undefined') { %>
+        <div>
+        <%- description %>
+        </div>
+    <% } %>
+</div>
+
+<%
+// Documentation: https://stackoverflow.com/questions/2068344/how-do-i-get-a-youtube-video-thumbnail-from-the-youtube-api
+%>
+<opengraph-image href="https://i.ytimg.com/vi/<%= youtubeCode %>/maxresdefault.jpg"/>

@@ -1,0 +1,9 @@
+<%
+  if (typeof videoUrls !== "undefined" && videoUrls && videoUrls[0] && videoUrls[0].url) {
+    %><embed-resource
+            template="embed-thumbnail.html.ejs"
+            style="max-width: 100%;"
+            width="200"
+            align="right"
+            href="<%= videoUrls[0].url %>"/><%
+  } %>

@@ -1,0 +1,28 @@
+<img <%
+    if (typeof embedClass !== 'undefined' && embedClass) {
+        %>class="<%= embedClass %>" <%
+    }
+
+    if (typeof imgwidth !== 'undefined' && imgwidth) {
+        %>width="<%= width %>" <%
+    }
+
+    if (typeof imgalign !== 'undefined' && imgalign) {
+        %>align="<%= align %>" <%
+    }
+
+    if (typeof style !== 'undefined' && style) {
+        %>style="<%= style %>" <%
+    }
+
+    if (typeof alt !== 'undefined' && alt) {
+        %>alt="<%= alt %>" <%
+    }
+
+    if (typeof title !== 'undefined' && title) {
+        %>title="<%= title %>" <%
+    }
+
+    %> src="<%= imageUrl %>"/>
+
+<opengraph-image href="<%= imageUrl %>"/>

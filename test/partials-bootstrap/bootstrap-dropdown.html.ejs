@@ -1,0 +1,13 @@
+<div class="dropdown">
+  <button class="btn <%= buttonType %> <%= buttonSize %> <%= additionalClasses %> dropdown-toggle" 
+            type="button" id="<%= id %>" data-toggle="dropdown"
+            aria-haspopup="true" aria-expanded="false">
+    <%= dropdownLabel %>
+    <span class="caret"></span>
+  </button>
+  <div class="dropdown-menu<%
+        if (rightAligned) { %> dropdown-menu-right <% }
+    %>" role="menu" aria-labelledby="<%= id %>">
+      <%- content %>
+  </div>
+</div>

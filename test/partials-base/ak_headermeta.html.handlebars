@@ -1,0 +1,93 @@
+
+{{!
+ - Basic HTML Meta Tags - Copied from https://gist.github.com/1997924 
+ - Some documentation is on that page
+ - Other documentation is here - http://webdesign.about.com/od/metataglibraries/a/meta-tag-list.htm
+ */
+}}
+
+{{#if metakeywords }}<meta name="keywords"    content="{{ metakeywords }}" />{{/if}}
+{{#if metadescription }}<meta name="description" content="{{ metadescription }}" />{{/if}} 
+{{#if metasubject     }}<meta name="subject"     content="{{ metasubject }}" />{{/if}} 
+{{#if metacopyright   }}<meta name="copyright"   content="{{ metacopyright }}" />{{/if}} 
+{{#if metalanguage    }}<meta name="language"    content="{{ metalanguage }}" />{{/if}} 
+{{#if metarobots      }}<meta name="robots"      content="{{ metarobots }}" />{{/if}}
+{{#if metarevised     }}<meta name="revised"     content="{{ metarevised }}" />{{/if}}
+{{#if metaabstract    }}<meta name="abstract"    content="{{ metaabstract }}" />{{/if}}
+{{#if metatopic       }}<meta name="topic"       content="{{ metatopic }}" />{{/if}}
+{{#if metasummary     }}<meta name="summary"     content="{{ metasummary }}" />{{/if}}
+{{#if metaclassification }}<meta name="Classification" content="{{ metaclassification }}" />{{/if}}
+{{#if metaauthor      }}<meta name="author"      content="{{ metaauthor }}" />{{/if}}
+{{#if metadesigner    }}<meta name="designer"    content="{{ metadesigner }}" />{{/if}}
+{{#if metareplyTo     }}<meta name="reply-to"    content="{{ metareplyTo }}" />{{/if}}
+{{#if metaowner       }}<meta name="owner"       content="{{ metaowner }}" />{{/if}}
+{{#if metaurl         }}<meta name="url"         content="{{ metaurl }}" />{{/if}}
+{{#if metaidentifierURL }}<meta name="identifier-URL" content="{{ metaidentifierURL }}" />{{/if}}
+{{#if metadirectory   }}<meta name="directory"   content="{{ metadirectory }}" />{{/if}}
+{{#if metapagename    }}<meta name="pagename"    content="{{ metapagename }}" />{{/if}}
+{{#if metacategory    }}<meta name="category"    content="{{ metacategory }}" />{{/if}}
+{{#if metacoverage    }}<meta name="coverage"    content="{{ metacoverage }}" />{{/if}}
+{{#if metadistribution }}<meta name="distribution" content="{{ metadistribution }}" />{{/if}}
+{{#if metarating      }}<meta name="rating"      content="{{ metarating }}" />{{/if}}
+{{#if metarevisitAfter }}<meta name="revisit-after" content="{{ metarevisitAfter }}" />{{/if}}
+{{#if metasubtitle    }}<meta name="subtitle"    content="{{ metasubtitle }}" />{{/if}}
+{{#if metatarget      }}<meta name="target"      content="{{ metatarget }}" />{{/if}}
+{{#if metaHandheldFriendly }}<meta name="HandheldFriendly" content="{{ metaHandheldFriendly }}" />{{/if}}
+{{#if metaMobileOptimized }}<meta name="MobileOptimized" content="{{ metaMobileOptimized }}" />{{/if}}
+{{#if metadate        }}<meta name="date"        content="{{ metadate }}" />{{/if}}
+{{#if metasearch_date }}<meta name="search_date" content="{{ metasearch_date }}" />{{/if}}
+{{#if metaDCtitle     }}<meta name="DC.title"    content="{{ metaDCtitle }}" />{{/if}}
+{{#if metaResourceLoaderDynamicStyles }}<meta name="ResourceLoaderDynamicStyles" content="{{ metaResourceLoaderDynamicStyles }}" />{{/if}}
+{{#if metamedium      }}<meta name="medium"      content="{{ metamedium }}" />{{/if}}
+{{#if metasyndicationSource }}<meta name="syndication-source" content="{{ metasyndicationSource }}" />{{/if}}
+{{#if metaoriginalSource }}<meta name="original-source" content="{{ metaoriginalSource }}" />{{/if}}
+{{#if metaverifyv1    }}<meta name="verify-v1"   content="{{ metaverifyv1 }}" />{{/if}}
+{{#if metay_key       }}<meta name="y_key"       content="{{ metay_key }}" />{{/if}}
+{{#if metapageKey     }}<meta name="pageKey"     content="{{ metapageKey }}" />{{/if}}
+{{#if metaname        }}<meta name="name"        content="{{ metaname }}" />{{/if}}
+{{#if metaExpires     }}<meta name="Expires"     content="{{ metaExpires }}" />{{/if}}
+{{#if metaPragma      }}<meta name="Pragma"      content="{{ metaPragma }}" />{{/if}}
+{{#if metaCacheControl }}<meta name="Cache-Control" content="{{ metaCacheControl }}" />{{/if}}
+{{#if metaimagetoolbar }}<meta name="imagetoolbar" content="{{ metaimagetoolbar }}" />{{/if}}
+{{#if metax_dns_prefetch_control }}<meta name="x-dns-prefetch-control" content="{{ metax_dns_prefetch_control }}" />{{/if}}
+
+<!-- OpenGraph Meta Tags -->
+
+{{#if metaOGtitle         }}<meta name='og:title' content='{{ metaOGtitle }}'/>{{/if}}
+{{#if metaOGtype          }}<meta name='og:type'  content='{{ metaOGtype }}'/>{{/if}}
+{{#if rendered_url        }}<meta name='og:url'   content='{{ rendered_url }}'/>{{/if}}
+{{#if metaOGimage         }}<meta name='og:image' content='{{ metaOGimage }}'/>{{/if}}
+{{#if metaOGsite_name     }}<meta name='og:site_name' content='{{ metaOGsite_name }}'/>{{/if}}
+{{#if metaOGdescription   }}<meta name='og:description' content='{{ metaOGdescription }}'/>{{/if}}
+
+{{#if metaOGpage_id       }}<meta name='fb:page_id' content='{{ metaOGpage_id }}'/>{{/if}}
+{{#if metaOGapplicationname }}<meta name='application-name' content='{{ metaOGapplicationname }}'/>{{/if}}
+{{#if metaOGemail         }}<meta name='og:email' content='{{ metaOGemail }}'/>{{/if}}
+{{#if metaOGphone_number  }}<meta name='og:phone_number' content='{{ metaOGphone_number }}'/>{{/if}}
+{{#if metaOGfax_number    }}<meta name='og:fax_number' content='{{ metaOGfax_number }}'/>{{/if}}
+
+{{#if metaOGlatitude      }}<meta name='og:latitude' content='{{ metaOGlatitude }}'/>{{/if}}
+{{#if metaOGlongitude     }}<meta name='og:longitude' content='{{ metaOGlongitude }}'/>{{/if}}
+{{#if metaOGstreetaddress }}<meta name='og:street-address' content='{{ metaOGstreetaddress }}'/>{{/if}}
+{{#if metaOGlocality      }}<meta name='og:locality' content='{{ metaOGlocality }}'/>{{/if}}
+{{#if metaOGregion        }}<meta name='og:region' content='{{ metaOGregion }}'/>{{/if}}
+{{#if metaOGpostalcode    }}<meta name='og:postal-code' content='{{ metaOGpostalcode }}'/>{{/if}}
+{{#if metaOGcountryname   }}<meta name='og:country-name' content='{{ metaOGcountryname }}'/>{{/if}}
+
+{{#if metaOGadmins        }}<meta property='fb:admins' content='{{ metaOGadmins }}'/>{{/if}}
+{{#if metaOGproptype      }}<meta property='og:type' content='{{ metaOGproptype }}'/>{{/if}}
+{{#if metaOGpoints        }}<meta property='og:points' content='{{ metaOGpoints }}'/>{{/if}}
+
+{{#if metaOGvideo         }}<meta property='og:video' content='{{ metaOGvideo }}'/>{{/if}}
+{{#if metaOGvideoheight   }}<meta property='og:video:height' content='{{ metaOGvideoheight }}'/>{{/if}}
+{{#if metaOGvideowidth    }}<meta property='og:video:width' content='{{ metaOGvideowidth }}'/>{{/if}}
+{{#if metaOGvideotype     }}<meta property='og:video:type' content='{{ metaOGvideotype }}'/>{{/if}}
+
+{{#if metaOGaudio         }}<meta property='og:audio' content='{{ metaOGaudio }}'/>{{/if}}
+{{#if metaOGaudiotitle    }}<meta property='og:audio:title' content='{{ metaOGaudiotitle }}'/>{{/if}}
+{{#if metaOGaudioartist   }}<meta property='og:audio:artist' content='{{ metaOGaudioartist }}'/>{{/if}}
+{{#if metaOGaudioalbum    }}<meta property='og:audio:album' content='{{ metaOGaudioalbum }}'/>{{/if}}
+{{#if metaOGaudiotype     }}<meta property='og:audio:type' content='{{ metaOGaudiotype }}'/>{{/if}}
+
+{{! http://en.wikipedia.org/wiki/Canonical_link_element }}
+{{#if rendered_url }}<link rel="canonical" href="{{ rendered_url }}" />{{/if}}

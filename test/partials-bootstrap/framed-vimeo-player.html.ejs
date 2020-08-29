@@ -1,0 +1,13 @@
+
+<div class="card framed-video-player">
+    <div class="card-header"><h3><%= title %></h3></div>
+    <div class="card-body">
+        <p>Source: Vimeo, by
+        <a href="<%= vimeoUrl %>" rel="nofollow"><%= authorName %></a> </p>
+        <% if (typeof hideDescription === "undefined" || ! hideDescription) {
+                %><%= description %><%
+            } %>
+        <div class="embed-responsive  embed-responsive-16by9" style="clear: both;"><%- embedCode %></div>
+    </div>
+</div>
+
