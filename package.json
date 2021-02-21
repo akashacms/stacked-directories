@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "main": "lib/watcher.mjs",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "bin": {
+    "akashawatcher": "lib/cli.js"
   },
   "keywords": [],
   "author": "David Herron <david@davidherron.com>",
