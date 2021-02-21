@@ -4,7 +4,7 @@
   "description": "",
   "main": "lib/watcher.mjs",
   "bin": {
-    "akashawatcher": "lib/cli.js"
+    "akashawatcher": "lib/cli.mjs"
   },
   "keywords": [],
   "author": "David Herron <david@davidherron.com>",
