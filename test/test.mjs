@@ -318,8 +318,9 @@ describe('Overlaid directories', function() {
         // console.log(events);
         // console.log(found);
 
-        assert.isNotNull(found);
-        assert.isDefined(found);
+        assert.isOk(found);
+        // This line randomly fails
+        // assert.isDefined(found);
         assert.equal(found.name, name);
         let vpinfo = found.info;
         // console.log(vpinfo);
@@ -455,7 +456,7 @@ describe('Documents dual with mounted', function() {
         this.timeout(25000);
         try {
             watcher = new DirsWatcher(name);
-            
+
             watcher.on('change', (name, info) => {
                 // console.log(`watcher on 'change' for ${info.vpath}`);
                 events.push({
@@ -481,7 +482,7 @@ describe('Documents dual with mounted', function() {
                 { mounted: 'documents-example',       mountPoint: '/' },
                 { mounted: 'documents-epub-skeleton', mountPoint: 'epub' }
             ]);
-            
+
         } catch (e) {
             console.error(e);
             throw e;
@@ -567,6 +568,185 @@ describe('Documents dual with mounted', function() {
         assert.equal(vpinfo.pathInMounted, 'chap5/b/chap5b.html.md');
         assert.equal(vpinfo.vpath, 'epub/chap5/b/chap5b.html.md');
         assert.equal(vpinfo.mime, 'text/markdown');
+    });
+
+    it('should close the directory watcher', async function() {
+        this.timeout(25000);
+        await watcher.close();
+    });
+
+});
+
+describe('Documents dual with mounted with ignored files', function() {
+
+    let watcher;
+    let events = [];
+    const name = 'test-mounted-ignored';
+
+    it('should successfully load dual mounted documents directories', async function() {
+        this.timeout(25000);
+        try {
+            watcher = new DirsWatcher(name);
+            
+            watcher.on('change', (name, info) => {
+                // console.log(`watcher on 'change' for ${info.vpath}`);
+                events.push({
+                    event: 'change',
+                    name, info
+                });
+            });
+            watcher.on('add', (name, info) => {
+                // console.log(`watcher on 'add' for ${info.vpath}`);
+                events.push({
+                    event: 'add',
+                    name, info
+                });
+            });
+            watcher.on('unlink', (name, info) => {
+                // console.log(`watcher on 'unlink' for ${info.vpath}`);
+                events.push({
+                    event: 'unlink',
+                    name, info
+                });
+            });
+            watcher.watch([
+                {
+                    mounted: 'documents-example',
+                    mountPoint: '/',
+                    // These are the files we'll ignore
+                    ignore: [
+                        '**/viewer-js-viewer/**',
+                        '**/folder/**/*.html.md',
+                        '**/*.html.ejs'
+                    ]
+                },
+                { mounted: 'documents-epub-skeleton', mountPoint: 'epub' }
+            ]);
+            
+        } catch (e) {
+            console.error(e);
+            throw e;
+        }
+    });
+
+    it('should get Ready with overlaid directories documents watcher', async function() {
+        this.timeout(25000);
+        try {
+            let ready = await watcher.isReady;
+            assert.isOk(ready);
+        } catch (e) {
+            console.error(e);
+            throw e;
+        }
+    });
+
+    it('should find feeds-tags', async function() {
+        // console.log(events);
+        let found;
+        for (let event of events) {
+            if (event.event === 'add' && event.info.vpath === 'feeds-tags.html.md') {
+                found = event;
+                break;
+            }
+        }
+        // console.log(found);
+        assert.isNotNull(found);
+        assert.isDefined(found);
+    });
+
+    it('should NOT find viewer-js-viewer files', async function() {
+        let found;
+        for (let event of events) {
+            if (event.info.vpath === 'viewer-js-viewer/index.html.md') {
+                found = event;
+                break;
+            }
+        }
+
+        assert.notOk(found);
+
+        for (let event of events) {
+            if (event.info.vpath === 'viewer-js-viewer/pdf-spec-inline.html.md') {
+                found = event;
+                break;
+            }
+        }
+
+        assert.notOk(found);
+
+        for (let event of events) {
+            if (event.info.vpath === 'viewer-js-viewer/pdf-spec-link.html.md') {
+                found = event;
+                break;
+            }
+        }
+
+        assert.notOk(found);
+    });
+
+    it('should NOT find folder/**/*.html.md', async function() {
+        let found;
+        for (let event of events) {
+            if (event.info.vpath === 'folder/index.html.md') {
+                found = event;
+                break;
+            }
+        }
+
+        assert.notOk(found);
+
+        for (let event of events) {
+            if (event.info.vpath === 'folder/folder/index.html.md') {
+                found = event;
+                break;
+            }
+        }
+
+        assert.notOk(found);
+
+        for (let event of events) {
+            if (event.info.vpath === 'folder/folder/folder/page2.html.md') {
+                found = event;
+                break;
+            }
+        }
+
+        assert.notOk(found);
+
+        for (let event of events) {
+            if (event.info.vpath === 'folder/folder/folder/page1.html.md') {
+                found = event;
+                break;
+            }
+        }
+
+        assert.notOk(found);
+
+        for (let event of events) {
+            if (event.info.vpath === 'folder/folder/folder/index.html.md') {
+                found = event;
+                break;
+            }
+        }
+
+        assert.notOk(found);
+    });
+
+    it('should NOT find **/*.html.ejs', async function() {
+        let found;
+        for (let event of events) {
+            // console.log(`NOT html.ejs ${event.info.vpath} ${typeof event.info.vpath}`);
+            if (event.info.vpath.match(/\.html\.ejs$/)
+             && event.info.vpath !== 'epub/toc.html.ejs') {
+                found = event;
+                break;
+            }
+        }
+
+        // console.log(found);
+
+        assert.notOk(found);
+
     });
 
     it('should close the directory watcher', async function() {
