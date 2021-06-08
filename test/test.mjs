@@ -1,9 +1,9 @@
 
 import util from 'util';
+import { promises as fs } from 'fs';
 import Chai from 'chai';
 const assert = Chai.assert;
 import { DirsWatcher } from '../lib/watcher.mjs';
-import { info } from 'console';
 
 
 describe('Documents simple', function() {
@@ -734,6 +734,11 @@ describe('Documents dual with mounted with ignored files', function() {
 
     it('should NOT find **/*.html.ejs', async function() {
         let found;
+
+        // In this case we're asking to ignore .html.ejs files in one
+        // of the directories, but not the other.  Hence it is legit
+        // for epub/toc.html.ejs to show up.  In this section we don't
+        // want that file to create a false failure.
         for (let event of events) {
             // console.log(`NOT html.ejs ${event.info.vpath} ${typeof event.info.vpath}`);
             if (event.info.vpath.match(/\.html\.ejs$/)
@@ -747,6 +752,16 @@ describe('Documents dual with mounted with ignored files', function() {
 
         assert.notOk(found);
 
+        // In this section we want to make sure it is included.
+        for (let event of events) {
+            // console.log(`NOT html.ejs ${event.info.vpath} ${typeof event.info.vpath}`);
+            if (event.info.vpath === 'epub/toc.html.ejs') {
+                found = event;
+                break;
+            }
+        }
+
+        assert.isOk(found);
     });
 
     it('should close the directory watcher', async function() {
@@ -755,3 +770,279 @@ describe('Documents dual with mounted with ignored files', function() {
     });
 
 });
+
+describe('Add event post-Ready', function() {
+
+    let watcher;
+    let events = [];
+    const name = 'test-add-event';
+
+    it('should successfully load overridden documents directories', async function() {
+        this.timeout(25000);
+        try {
+            watcher = new DirsWatcher(name);
+
+            watcher.on('change', (name, info) => {
+                // console.log(`watcher on 'change' for ${info.vpath}`);
+                events.push({
+                    event: 'change',
+                    name, info
+                });
+            });
+            watcher.on('add', (name, info) => {
+                // console.log(`watcher on 'add' for ${info.vpath}`);
+                events.push({
+                    event: 'add',
+                    name, info
+                });
+            });
+            watcher.on('unlink', (name, info) => {
+                // console.log(`watcher on 'unlink' for ${info.vpath}`);
+                events.push({
+                    event: 'unlink',
+                    name, info
+                });
+            });
+            await watcher.watch([
+                { mounted: 'partials-example',      mountPoint: '/' },
+                { mounted: 'partials-bootstrap',    mountPoint: '/' },
+                { mounted: 'partials-booknav',      mountPoint: '/' },
+                { mounted: 'partials-footnotes',    mountPoint: '/' },
+                { mounted: 'partials-embeddables',  mountPoint: '/' },
+                { mounted: 'partials-blog-podcast', mountPoint: '/' },
+                { mounted: 'partials-base',         mountPoint: '/' },
+            ]);
+
+        } catch (e) {
+            console.error(e);
+            throw e;
+        }
+    });
+
+    // verify partials-blog-podcast/blog-next-prev.html.ejs in expected dirs
+
+    // copy partials-blog-podcast/blog-next-prev.html.ejs to partials-base
+    // NO event
+
+    // copy partials-blog-podcast/blog-next-prev.html.ejs to partials-footnotes
+    // NO event
+
+    // partials-blog-podcast/blog-next-prev.html.ejs to partials-example
+    // EMIT EVENT ... the stack should then include the added files
+
+    it('should get Ready with overlaid directories documents watcher', async function() {
+        this.timeout(25000);
+        try {
+            let ready = await watcher.isReady;
+            assert.isOk(ready);
+        } catch (e) {
+            console.error(e);
+            throw e;
+        }
+    });
+
+    it('should find blog-next-prev.html.ejs in expected places', async function() {
+        let found;
+        for (let count = 0; count < 10; count++) {
+            // Wait for a second to allow events to circulate
+            await new Promise((resolve, reject) => {
+                setTimeout(() => { resolve(); }, 1000);
+            });
+
+            for (let event of events) {
+                if (event.event === 'add'
+                && event.info.vpath === 'blog-next-prev.html.ejs') {
+                    found = event;
+                    break;
+                }
+            }
+
+            if (found) break;
+        }
+        // console.log(found);
+
+        assert.isNotNull(found);
+        assert.isDefined(found);
+        assert.equal(found.name, name);
+        let vpinfo = found.info;
+        assert.isOk(vpinfo);
+
+        assert.equal(vpinfo.fspath, 'partials-bootstrap/blog-next-prev.html.ejs');
+        assert.equal(vpinfo.mounted, 'partials-bootstrap');
+        assert.equal(vpinfo.mountPoint, '/');
+        assert.equal(vpinfo.pathInMounted, 'blog-next-prev.html.ejs');
+        assert.equal(vpinfo.vpath, 'blog-next-prev.html.ejs');
+        assert.equal(vpinfo.stack.length, 2);
+
+        // This is already fully tested previously.  What we're doing is
+        // quickly ensuring this file is in the expected places
+
+
+    });
+
+    it('should not trigger ADD on copy blog-next-prev.html.ejs to partials-base', async function() {
+        this.timeout(25000);
+
+        await fs.copyFile('partials-bootstrap/blog-next-prev.html.ejs',
+                          'partials-base/blog-next-prev.html.ejs');
+        let found;
+        for (let count = 0; count < 10; count++) {
+            // Wait for a second to allow events to circulate
+            await new Promise((resolve, reject) => {
+                setTimeout(() => { resolve(); }, 1000);
+            });
+
+            for (let event of events) {
+                if (event.event === 'add'
+                && event.info.vpath === 'blog-next-prev.html.ejs') {
+                    let instack = false;
+                    for (let s of event.info.stack) {
+                        if (s.fspath === 'partials-bootstrap/blog-next-prev.html.ejs') {
+                            instack = true;
+                            break;
+                        }
+                    }
+                    if (instack) {
+                        found = event;
+                        break;
+                    }
+                }
+            }
+
+            if (found) break;
+        }
+        // console.log(found);
+
+        assert.isNotNull(found);
+        assert.isDefined(found);
+        assert.equal(found.name, name);
+        let vpinfo = found.info;
+        assert.isOk(vpinfo);
+
+        assert.equal(vpinfo.fspath, 'partials-bootstrap/blog-next-prev.html.ejs');
+        assert.equal(vpinfo.stack.length, 2);
+
+        // We've copied the file to the bottom of the stack.  There should not
+        // have been an event, and therefore the stack should not have changed
+
+    });
+
+    it('should not trigger ADD on copy blog-next-prev.html.ejs to partials-footnotes', async function() {
+        this.timeout(25000);
+
+        await fs.copyFile('partials-bootstrap/blog-next-prev.html.ejs',
+                          'partials-footnotes/blog-next-prev.html.ejs');
+        let found;
+        for (let count = 0; count < 10; count++) {
+            // Wait for a second to allow events to circulate
+            await new Promise((resolve, reject) => {
+                setTimeout(() => { resolve(); }, 1000);
+            });
+
+            for (let event of events) {
+                if (event.event === 'add'
+                 && event.info.vpath === 'blog-next-prev.html.ejs') {
+                    let instack = false;
+                    for (let s of event.info.stack) {
+                        if (s.fspath === 'partials-bootstrap/blog-next-prev.html.ejs') {
+                            instack = true;
+                            break;
+                        }
+                    }
+                    if (instack) {
+                        found = event;
+                        break;
+                    }
+                }
+            }
+
+            if (found) break;
+        }
+        
+        // console.log(found);
+
+        assert.isNotNull(found);
+        assert.isDefined(found);
+        assert.equal(found.name, name);
+        let vpinfo = found.info;
+        assert.isOk(vpinfo);
+
+        assert.equal(vpinfo.fspath, 'partials-bootstrap/blog-next-prev.html.ejs');
+        assert.equal(vpinfo.stack.length, 2);
+
+        // We've copied the file to the middle of the stack.  There should not
+        // have been an event, and therefore the stack should not have changed
+
+    });
+
+    it('should trigger ADD on copy blog-next-prev.html.ejs to partials-example', async function() {
+        this.timeout(25000);
+
+        await fs.copyFile('partials-bootstrap/blog-next-prev.html.ejs',
+                          'partials-example/blog-next-prev.html.ejs');
+        
+        
+        let found;
+        for (let count = 0; count < 10; count++) {
+            // Wait for a second to allow events to circulate
+            await new Promise((resolve, reject) => {
+                setTimeout(() => { resolve(); }, 1000);
+            });
+
+            for (let event of events) {
+                if (event.event === 'add'
+                 && event.info.vpath === 'blog-next-prev.html.ejs') {
+                    let instack = false;
+                    for (let s of event.info.stack) {
+                        if (s.fspath === 'partials-example/blog-next-prev.html.ejs') {
+                            instack = true;
+                            break;
+                        }
+                    }
+                    if (instack) {
+                        found = event;
+                        break;
+                    }
+                }
+            }
+
+            if (found) break;
+        }
+        
+        assert.isNotNull(found);
+        assert.isDefined(found);
+        assert.equal(found.name, name);
+
+        // console.log(found);
+        // console.log(found.info.stack);
+
+        let vpinfo = found.info;
+        assert.isOk(vpinfo);
+
+        assert.equal(vpinfo.fspath, 'partials-example/blog-next-prev.html.ejs');
+        assert.equal(vpinfo.stack.length, 5);
+
+        // We've copied the file to the middle of the stack.  There should not
+        // have been an event, and therefore the stack should not have changed
+
+        assert.equal(vpinfo.stack[0].fspath, 'partials-example/blog-next-prev.html.ejs');
+        assert.equal(vpinfo.stack[1].fspath, 'partials-bootstrap/blog-next-prev.html.ejs');
+        assert.equal(vpinfo.stack[2].fspath, 'partials-footnotes/blog-next-prev.html.ejs');
+        assert.equal(vpinfo.stack[3].fspath, 'partials-blog-podcast/blog-next-prev.html.ejs');
+        assert.equal(vpinfo.stack[4].fspath, 'partials-base/blog-next-prev.html.ejs');
+    });
+
+    it('should close the directory watcher', async function() {
+        this.timeout(25000);
+        await watcher.close();
+    });
+
+    it('should delete the files which were copied', async function() {
+        await fs.unlink('partials-example/blog-next-prev.html.ejs');
+        await fs.unlink('partials-footnotes/blog-next-prev.html.ejs');
+        await fs.unlink('partials-base/blog-next-prev.html.ejs');
+    });
+
+
+});
+
