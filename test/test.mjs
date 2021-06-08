@@ -1046,3 +1046,449 @@ describe('Add event post-Ready', function() {
 
 });
 
+
+describe('Change and Unlink events post-Ready', function() {
+
+    let watcher;
+    let events = [];
+    const name = 'test-add-event';
+
+    it('should successfully load overridden documents directories', async function() {
+        this.timeout(25000);
+        try {
+            watcher = new DirsWatcher(name);
+
+            watcher.on('change', (name, info) => {
+                // console.log(`watcher on 'change' for ${info.vpath}`);
+                events.push({
+                    event: 'change',
+                    name, info
+                });
+            });
+            watcher.on('add', (name, info) => {
+                // console.log(`watcher on 'add' for ${info.vpath}`);
+                events.push({
+                    event: 'add',
+                    name, info
+                });
+            });
+            watcher.on('unlink', (name, info) => {
+                // console.log(`watcher on 'unlink' for ${info.vpath}`);
+                events.push({
+                    event: 'unlink',
+                    name, info
+                });
+            });
+            await watcher.watch([
+                { mounted: 'partials-example',      mountPoint: '/' },
+                { mounted: 'partials-bootstrap',    mountPoint: '/' },
+                { mounted: 'partials-booknav',      mountPoint: '/' },
+                { mounted: 'partials-footnotes',    mountPoint: '/' },
+                { mounted: 'partials-embeddables',  mountPoint: '/' },
+                { mounted: 'partials-blog-podcast', mountPoint: '/' },
+                { mounted: 'partials-base',         mountPoint: '/' },
+            ]);
+
+        } catch (e) {
+            console.error(e);
+            throw e;
+        }
+    });
+
+    // copy a file into partials-example ... make sure an add event happens. 
+    // touch it ... make sure a change event happens 
+
+    // copy a file into partials-base that is hidden by another file
+    // make sure no add event happens
+    // touch it ... make sure no change event happens
+
+
+    it('should get Ready with overlaid directories documents watcher', async function() {
+        this.timeout(25000);
+        try {
+            let ready = await watcher.isReady;
+            assert.isOk(ready);
+        } catch (e) {
+            console.error(e);
+            throw e;
+        }
+    });
+
+    it('should find blog-next-prev.html.ejs in expected places', async function() {
+        let found;
+        for (let count = 0; count < 10; count++) {
+            // Wait for a second to allow events to circulate
+            await new Promise((resolve, reject) => {
+                setTimeout(() => { resolve(); }, 1000);
+            });
+
+            for (let event of events) {
+                if (event.event === 'add'
+                && event.info.vpath === 'blog-next-prev.html.ejs') {
+                    found = event;
+                    break;
+                }
+            }
+
+            if (found) break;
+        }
+        // console.log(found);
+
+        assert.isNotNull(found);
+        assert.isDefined(found);
+        assert.equal(found.name, name);
+        let vpinfo = found.info;
+        assert.isOk(vpinfo);
+
+        assert.equal(vpinfo.fspath, 'partials-bootstrap/blog-next-prev.html.ejs');
+        assert.equal(vpinfo.mounted, 'partials-bootstrap');
+        assert.equal(vpinfo.mountPoint, '/');
+        assert.equal(vpinfo.pathInMounted, 'blog-next-prev.html.ejs');
+        assert.equal(vpinfo.vpath, 'blog-next-prev.html.ejs');
+        assert.equal(vpinfo.stack.length, 2);
+
+        // This is already fully tested previously.  What we're doing is
+        // quickly ensuring this file is in the expected places
+
+
+    });
+
+
+    it('should not trigger ADD on copy blog-next-prev.html.ejs to partials-base', async function() {
+        this.timeout(75000);
+
+        await fs.copyFile('partials-bootstrap/blog-next-prev.html.ejs',
+                          'partials-base/blog-next-prev.html.ejs');
+        let found;
+        for (let count = 0; count < 10; count++) {
+            // Wait for a second to allow events to circulate
+            await new Promise((resolve, reject) => {
+                setTimeout(() => { resolve(); }, 1000);
+            });
+
+            for (let event of events) {
+                if (event.event === 'add'
+                && event.info.vpath === 'blog-next-prev.html.ejs') {
+                    let instack = false;
+                    for (let s of event.info.stack) {
+                        if (s.fspath === 'partials-bootstrap/blog-next-prev.html.ejs') {
+                            instack = true;
+                            break;
+                        }
+                    }
+                    if (instack) {
+                        found = event;
+                        break;
+                    }
+                }
+            }
+
+            if (found) break;
+        }
+        // console.log(found);
+
+        assert.isNotNull(found);
+        assert.isDefined(found);
+        assert.equal(found.name, name);
+        let vpinfo = found.info;
+        assert.isOk(vpinfo);
+
+        assert.equal(vpinfo.fspath, 'partials-bootstrap/blog-next-prev.html.ejs');
+        assert.equal(vpinfo.stack.length, 2);
+
+        // We've copied the file to the bottom of the stack.  There should not
+        // have been an event, and therefore the stack should not have changed
+
+    });
+
+    it('should not trigger CHANGE on touching blog-next-prev.html.ejs to partials-base', async function() {
+        this.timeout(75000);
+
+        const stats = await fs.stat('partials-base/blog-next-prev.html.ejs');
+        await fs.utimes('partials-base/blog-next-prev.html.ejs',
+                    stats.atimeMs + 10000, stats.mtimeMs + 10000);
+        
+
+        let found;
+        for (let count = 0; count < 30; count++) {
+            // Wait for a second to allow events to circulate
+            await new Promise((resolve, reject) => {
+                setTimeout(() => { resolve(); }, 1000);
+            });
+
+            for (let event of events) {
+                if (event.event === 'change'
+                && event.info.vpath === 'blog-next-prev.html.ejs') {
+                    found = event;
+                    break;
+                }
+            }
+
+            if (found) break;
+        }
+
+        assert.isNotOk(found);
+
+    });
+
+
+    it('should trigger ADD on copy blog-next-prev.html.ejs to partials-example', async function() {
+        this.timeout(75000);
+
+        await fs.copyFile('partials-bootstrap/blog-next-prev.html.ejs',
+                          'partials-example/blog-next-prev.html.ejs');
+        let found;
+        for (let count = 0; count < 20; count++) {
+            // Wait for a second to allow events to circulate
+            await new Promise((resolve, reject) => {
+                setTimeout(() => { resolve(); }, 1000);
+            });
+
+            for (let event of events) {
+                if (event.event === 'add'
+                && event.info.vpath === 'blog-next-prev.html.ejs') {
+                    let instack = false;
+                    for (let s of event.info.stack) {
+                        if (s.fspath === 'partials-example/blog-next-prev.html.ejs') {
+                            instack = true;
+                            break;
+                        }
+                    }
+                    if (instack) {
+                        found = event;
+                        break;
+                    }
+                }
+            }
+
+            if (found) break;
+        }
+        // console.log(found);
+
+        assert.isNotNull(found);
+        assert.isDefined(found);
+        assert.equal(found.name, name);
+        let vpinfo = found.info;
+        assert.isOk(vpinfo);
+
+        assert.equal(vpinfo.fspath, 'partials-example/blog-next-prev.html.ejs');
+        assert.equal(vpinfo.stack.length, 4);
+
+        // We've copied the file to the bottom of the stack.  There should not
+        // have been an event, and therefore the stack should not have changed
+
+    });
+
+    it('should trigger CHANGE on touching blog-next-prev.html.ejs to partials-example', async function() {
+        this.timeout(75000);
+
+        const stats = await fs.stat('partials-example/blog-next-prev.html.ejs');
+        await fs.utimes('partials-example/blog-next-prev.html.ejs',
+                    stats.atimeMs + 10000, stats.mtimeMs + 10000);
+        
+
+        let found;
+        for (let count = 0; count < 30; count++) {
+            // Wait for a second to allow events to circulate
+            await new Promise((resolve, reject) => {
+                setTimeout(() => { resolve(); }, 1000);
+            });
+
+            for (let event of events) {
+                if (event.event === 'change'
+                && event.info.vpath === 'blog-next-prev.html.ejs') {
+                    found = event;
+                    break;
+                }
+            }
+
+            if (found) break;
+        }
+
+
+        assert.isOk(found);
+        assert.equal(found.name, name);
+
+        // console.log(found);
+        // console.log(found.info.stack);
+
+        let vpinfo = found.info;
+        assert.isOk(vpinfo);
+
+        assert.equal(vpinfo.fspath, 'partials-example/blog-next-prev.html.ejs');
+        assert.equal(vpinfo.stack.length, 4);
+
+        // We've copied the file to the middle of the stack.  There should not
+        // have been an event, and therefore the stack should not have changed
+
+        assert.equal(vpinfo.stack[0].fspath, 'partials-example/blog-next-prev.html.ejs');
+        assert.equal(vpinfo.stack[1].fspath, 'partials-bootstrap/blog-next-prev.html.ejs');
+        assert.equal(vpinfo.stack[2].fspath, 'partials-blog-podcast/blog-next-prev.html.ejs');
+        assert.equal(vpinfo.stack[3].fspath, 'partials-base/blog-next-prev.html.ejs');
+    });
+
+    // handle the unlink commands as test cases ... 
+    // in partials-base there should not be an unlink event
+    // in partials-example there should be a change event revealing partials-bootstrap
+
+
+    it('should not trigger unlink when deleting partials-base/blog-next-prev.html.ejs', async function() {
+        this.timeout(25000);
+        
+        await fs.unlink('partials-base/blog-next-prev.html.ejs');
+
+        let found;
+        for (let count = 0; count < 20; count++) {
+            // Wait for a second to allow events to circulate
+            await new Promise((resolve, reject) => {
+                setTimeout(() => { resolve(); }, 1000);
+            });
+
+            for (let event of events) {
+                if (event.event === 'unlink'
+                 && event.info.vpath === 'blog-next-prev.html.ejs'
+                 && event.info.fspath.indexOf('partials-base/blog-next-prev.html.ejs') >= 0) {
+                    found = event;
+                    break;
+                }
+            }
+
+            if (found) break;
+        }
+
+        assert.isNotOk(found);
+    });
+
+    it('should trigger change when deleting partials-example/blog-next-prev.html.ejs', async function() {
+        this.timeout(25000);
+        
+        await fs.unlink('partials-example/blog-next-prev.html.ejs');
+
+        let found;
+        for (let count = 0; count < 20; count++) {
+            // Wait for a second to allow events to circulate
+            await new Promise((resolve, reject) => {
+                setTimeout(() => { resolve(); }, 1000);
+            });
+
+            for (let event of events) {
+                if (event.event === 'change'
+                 && event.info.vpath === 'blog-next-prev.html.ejs'
+                 && event.info.fspath.indexOf('partials-bootstrap/blog-next-prev.html.ejs') >= 0) {
+                    found = event;
+                    break;
+                }
+            }
+
+            if (found) break;
+        }
+
+        assert.isOk(found);
+        assert.equal(found.name, name);
+
+        // console.log(found);
+        // console.log(found.info.stack);
+
+        let vpinfo = found.info;
+        assert.isOk(vpinfo);
+        assert.equal(vpinfo.fspath, 'partials-bootstrap/blog-next-prev.html.ejs');
+        assert.equal(vpinfo.stack.length, 2);
+
+        assert.equal(vpinfo.stack[0].fspath, 'partials-bootstrap/blog-next-prev.html.ejs');
+        assert.equal(vpinfo.stack[1].fspath, 'partials-blog-podcast/blog-next-prev.html.ejs');
+    });
+
+    // next add a new file with a new name 
+    // ensure an add event occurs
+    // unlink the file
+    // ensure an unlink event occurs 
+
+    it('should trigger add when creating new file', async function() {
+        this.timeout(25000);
+        
+        await fs.copyFile('partials-bootstrap/blog-next-prev.html.ejs',
+                          'partials-base/blog-base-next-prev.html.ejs');
+        let found;
+        for (let count = 0; count < 20; count++) {
+            // Wait for a second to allow events to circulate
+            await new Promise((resolve, reject) => {
+                setTimeout(() => { resolve(); }, 1000);
+            });
+
+            for (let event of events) {
+                if (event.event === 'add'
+                && event.info.vpath === 'blog-base-next-prev.html.ejs'
+                && event.info.fspath.indexOf('partials-base/blog-base-next-prev.html.ejs') >= 0) {
+                    found = event;
+                    break;
+                }
+            }
+
+            if (found) break;
+        }
+
+        assert.isOk(found);
+        assert.equal(found.name, name);
+
+        // console.log(found);
+        // console.log(found.info.stack);
+
+        let vpinfo = found.info;
+        assert.isOk(vpinfo);
+        assert.equal(vpinfo.fspath, 'partials-base/blog-base-next-prev.html.ejs');
+        assert.equal(vpinfo.stack.length, 1);
+
+        assert.equal(vpinfo.stack[0].fspath, 'partials-base/blog-base-next-prev.html.ejs');
+    });
+
+    it('should trigger unlink when deleting partials-base/blog-base-next-prev.html.ejs', async function() {
+        this.timeout(25000);
+        
+        await fs.unlink('partials-base/blog-base-next-prev.html.ejs');
+
+        let found;
+        for (let count = 0; count < 20; count++) {
+            // Wait for a second to allow events to circulate
+            await new Promise((resolve, reject) => {
+                setTimeout(() => { resolve(); }, 1000);
+            });
+
+            for (let event of events) {
+                if (event.event === 'unlink'
+                 && event.info.vpath === 'blog-base-next-prev.html.ejs'
+                 && event.info.fspath.indexOf('partials-base/blog-base-next-prev.html.ejs') >= 0) {
+                    found = event;
+                    break;
+                }
+            }
+
+            if (found) break;
+        }
+
+        assert.isOk(found);
+        assert.equal(found.event, 'unlink');
+        assert.equal(found.name, name);
+
+        // console.log(found);
+        // console.log(found.info.stack);
+
+        let vpinfo = found.info;
+        assert.isOk(vpinfo);
+        assert.equal(vpinfo.fspath, 'partials-base/blog-base-next-prev.html.ejs');
+        assert.isNotOk(vpinfo.stack);
+
+    });
+
+    it('should close the directory watcher', async function() {
+        this.timeout(25000);
+        await watcher.close();
+    });
+
+    /* it('should delete the files which were copied', async function() {
+        await fs.unlink('partials-example/blog-next-prev.html.ejs');
+        // await fs.unlink('partials-footnotes/blog-next-prev.html.ejs');
+        await fs.unlink('partials-base/blog-next-prev.html.ejs');
+    }); */
+
+});
+
