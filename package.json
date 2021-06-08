@@ -1,5 +1,5 @@
 {
-  "name": "stacked-dirs",
+  "name": "@akashacms/stacked-dirs",
   "version": "1.0.0",
   "description": "",
   "main": "lib/watcher.mjs",

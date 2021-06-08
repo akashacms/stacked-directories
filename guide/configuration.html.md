@@ -1,0 +1,74 @@
+---
+layout: ebook-page.html.ejs
+title: Installing and configuring the Stacked Directories package
+# bookHomeURL: 'toc.html'
+---
+
+The `@akashacms/stacked-dirs` package is currently available through its Github project, but will be added to _npm_ in the due course of time.  At the moment that means installation into an _npm_ project is:
+
+```
+$ npm init -y
+... set up the project
+$ npm install akashacms/stacked-directories --save
+... more project setup
+```
+
+It will be installed with the package name `@akashacms/stacked-dirs`.
+
+Three packages are installed as well:  
+
+* `mime` - to automatically determine MIME-types for files
+* `chokidar` - to handle scanning for files, and generating events on any file update
+* `minimatch` - is used in matching file names against "_glob_" patterns when ignoring certain files
+
+In your code, a basic configuration is:
+
+```js
+let events = [];
+const name = 'example.com';
+const watcher = new DirsWatcher(name);
+watcher.on('change', (name, info) => {
+    // console.log(`watcher on 'change' for ${info.vpath}`);
+    // Take action for _change_ event
+    events.push({
+        event: 'change',
+        name, info
+    });
+});
+watcher.on('add', (name, info) => {
+    // console.log(`watcher on 'add' for ${info.vpath}`);
+    // Take action for _add_ event
+    events.push({
+        event: 'add',
+        name, info
+    });
+});
+watcher.on('unlink', (name, info) => {
+    // console.log(`watcher on 'unlink' for ${info.vpath}`);
+    // Take action for _unlink_ event
+    events.push({
+        event: 'unlink',
+        name, info
+    });
+});
+await watcher.watch([
+    { mounted: 'documents-main',  mountPoint: '/' },
+    { mounted: 'documents-guide', mountPoint: 'guide' },
+    { mounted: 'documents-blog',  mountPoint: 'blog' }
+]);
+```
+
+The array passed to the `watch` method is where you describe the directory stack.
+
+Internally, _DirsWatcher_ uses _Chokidar_ to scan the files.  Chokidar sends its own set of events which are internally used by DirsWatcher.  The events sent by DirsWatcher are derived from the ones sent by Chokidar, depending on the directory stack configuration.
+
+One thing this means is initially DirsWatcher will emit a number of _add_ events, one for each file, because Chokidar is making its initial scan of the directories.  Once the initial scan is finished, DirsWatcher goes to the _Ready_ state.  This state is accessed from an exported field.
+
+```js
+let ready = await watcher.isReady;
+```
+
+The _isReady_ field is a Promise.  The Promise is resolved once the DirsWatcher has finished the initial directory scan.  The resolved value will he _true_ if the scan was successful, and _false_ otherwise.
+
+
+
