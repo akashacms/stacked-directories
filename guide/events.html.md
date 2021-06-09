@@ -27,6 +27,14 @@ The DirsWatcher instance will stay active until your application calls the `watc
 
 _Add_ events are sent for files added to the directory stack.
 
+These events are sent with the signature:
+
+```js
+function (name, vpinfo) { ... }
+```
+
+The `name` parameter contains the name of the DirsWatcher instance.  The `vpinfo` parameter contains a data structure describing the file and any instances in the directory stack.  That structure is discussed below.
+
 While performing the initial scan of the directories _Add_ events are sent for every file.  Once the `ready` event is sent, the initial scan is stopped.  Afterward _Add_ events are only sent for newly added files.
 
 Whether an event is sent depends on the position of the added file within the directory stack.  Remember the discussion of precedence order in [](index.html).
@@ -56,12 +64,28 @@ Consider if only `documents-main/blog/2021/announcement.html.md` exists.  If you
 
 If it's the other way around, that only `documents-blog/2021/announcement.html.md` exists, and you then add `documents-main/blog/2021/announcement.html.md`.  In this case the Add event will be generated because the newly added file has higher precedence.
 
-TODO TODO TODO TODO -- data structure
+The _vpinfo_ object has this structure:
+
+* `fspath`: Full file system path name
+* `vpath`: Virtual path for the file
+* `mime`: MIME type
+* `mounted`: The directory where this file was found
+* `mountPoint`: Virtual directory to which the parent directory is mounted
+* `pathInMounted`: The path for this file relative to the `mounted` directory
+* `stack`: An array of `vpinfo` instances corresponding to all instances of the virtual path within the configured directory stack
 
 
 # The Change event
 
 _Change_ events are sent for files which have changed.
+
+These events are sent with the signature:
+
+```js
+function (name, vpinfo) { ... }
+```
+
+The `name` parameter contains the name of the DirsWatcher instance.  The `vpinfo` parameter contains a data structure describing the file and any instances in the directory stack.  That structure is the same as was discussed for the _Add_ event.
 
 Whether an event is sent depends on the position of the added file within the directory stack.  Remember the discussion of precedence order in [](index.html).
 
@@ -80,11 +104,17 @@ A change to `documents-main/blog/2021/announcement.html.md` does trigger a _Chan
 
 There is a third instance for the _Change_ event, which has to do with deleting files.  If the file being deleted hides another file, then a change event is sent showing the file which has been uncovered.  That is, if `documents-main/blog/2021/announcement.html.md` is deleted, then a _Change_ event is emitted describing `documents-blog/2021/announcement.html.md`.
 
-TODO TODO TODO TODO -- data structure
-
 # The Unlink event
 
 _Unlink_ events are sent for files which have been deleted.
+
+These events are sent with the signature:
+
+```js
+function (name, vpinfo) { ... }
+```
+
+The `name` parameter contains the name of the DirsWatcher instance.  The `vpinfo` parameter contains a data structure describing the file and any instances in the directory stack.  That structure is the same as was discussed for the _Add_ event, but there is no `stack` member.
 
 Whether an event is sent depends on the position of the added file within the directory stack.  Remember the discussion of precedence order in [](index.html).
 
@@ -94,12 +124,17 @@ If deleting the front-most file causes a hidden file to be revealed, a _Change_ 
 
 If there is only one file for the virtual path in the stack, then an _Unlink_ event is sent.
 
-TODO TODO TODO TODO -- data structure
-
 # The Ready event
 
 _Ready_ events are sent when Chokidar emits its _Ready_ event.  This means, the Ready event is sent when the initial directory scan is completed.
 
+These events are sent with the signature:
+
+```js
+function (name) { ... }
+```
+
+The `name` parameter contains the name of the DirsWatcher instance. 
 
 
 

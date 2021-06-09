@@ -70,5 +70,16 @@ let ready = await watcher.isReady;
 
 The _isReady_ field is a Promise.  The Promise is resolved once the DirsWatcher has finished the initial directory scan.  The resolved value will he _true_ if the scan was successful, and _false_ otherwise.
 
+# Configuring the directory stack
+
+As we see above, the directory stack is an array of objects.  Each object describes one directory in the stack.
+
+The fields in these objects are:
+
+* `mounted`: The file system path that is to be used
+* `mountPoint`: The virtual path it is mounted to, where `/` represents a directory mounted at the root of the virtual space
+* `ignore`: An array of glob patterns of files that should be ignored.  This can be used to weed out files like `.DS_Store`.
+
+
 
 
