@@ -1,7 +1,7 @@
 
 import path from 'path';
 import { promises as fs } from 'fs';
-import { renderedOutput, layoutsDir, partialsDir } from './index.mjs';
+import { renderedOutput } from './index.mjs';
 
 import matter from 'gray-matter';
 import less from 'less';
@@ -25,8 +25,12 @@ const mditConfig = {
 const md = mdit(mditConfig);
 
 let njenv;
+let layoutsDir;
+let partialsDir;
 
-export function init() {
+export function init(_layoutsDir, _partialsDir) {
+    layoutsDir = _layoutsDir;
+    partialsDir = _partialsDir;
     njenv = new nunjucks.Environment(
         // Using watch=true requires installing chokidar
         new nunjucks.FileSystemLoader([ layoutsDir, partialsDir ], { watch: false }),

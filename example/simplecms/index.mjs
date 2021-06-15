@@ -4,31 +4,31 @@ import { DirsWatcher } from '../../lib/watcher.mjs';
 import path from 'path';
 import { promises as fs } from 'fs';
 import { render, renderedPath } from './render.mjs';
+import yaml from 'js-yaml';
 
-let batchmode = false;
+// Read the configuration from a YAML file
 
-const docsDirectories = [
-    {
-        mounted: '../project/documents-overlay',
-        mountPoint: '/'
-    },
-    {
-        mounted: '../../test/documents-example',
-        mountPoint: '/'
-    },
-    {
-        mounted: '../../test/documents-epub-skeleton',
-        mountPoint: 'epub'
-    }
-];
+if (process.argv.length < 2 || !process.argv[2]) {
+    console.error('USAGE: node index.mjs config.yaml');
+    process.exit(1);
+}
 
-export const renderedOutput = '../project/out';
-export const layoutsDir = '../project/layouts';
-export const partialsDir = '../../test/partials-base';
+let ymltxt = await fs.readFile(process.argv[2], 'utf8');
+let cfg = yaml.load(ymltxt);
+
+let batchmode = cfg.batchmode;
+
+const docsDirectories = cfg.dirs.documents;
+
+export const renderedOutput = cfg.dirs.output;
+export const layoutsDir = cfg.dirs.layout;
+export const partialsDir = cfg.dirs.partial;
 
 // Do initializations in the Render module
 import { init } from './render.mjs';
-init();
+init(layoutsDir, partialsDir);
+
+////////////// END OF CONFIGURATION SECTION
 
 const docsWatcher = new DirsWatcher('documents');
 

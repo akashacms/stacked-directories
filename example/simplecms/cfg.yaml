@@ -1,0 +1,14 @@
+batchmode: false
+
+dirs:
+    documents:
+        - mounted: '../project/documents-overlay'
+          mountPoint: '/'
+        - mounted: '../../test/documents-example'
+          mountPoint: '/'
+        - mounted: '../../test/documents-epub-skeleton'
+          mountPoint: 'epub'
+    output: ../project/out
+    layout: ../project/layouts
+    partial: ../../test/partials-base
+
