@@ -1,0 +1,33 @@
+{
+  "name": "guide",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm-run-all copy-assets build-site",
+    "copy-assets": "akasharender copy-assets config.js",
+    "build-site": "akasharender render config.js",
+    "watch": "npm-run-all --parallel watcher preview",
+    "watcher": "akasharender watch config.js",
+    "preview": "live-server out"
+  },
+  "keywords": [],
+  "author": "David Herron <david@davidherron.com>",
+  "license": "ISC",
+  "dependencies": {
+    "@akashacms/plugins-authors": "^0.7.4",
+    "@akashacms/plugins-base": "akashacms/akashacms-base#watcher",
+    "@akashacms/plugins-booknav": "akashacms/akashacms-booknav",
+    "@akashacms/plugins-breadcrumbs": "akashacms/akashacms-breadcrumbs",
+    "@akashacms/theme-bootstrap": "akashacms/akashacms-theme-bootstrap#watcher",
+    "@fortawesome/fontawesome-free": "^5.15.3",
+    "akasharender": "akashacms/akasharender#watcher",
+    "epub-website": "akashacms/epub-website#watcher",
+    "bootstrap": "^4.5.x",
+    "bootstrap-icons": "^1.4.0",
+    "jquery": "^3.5.x",
+    "popper.js": "^1.16.x",
+    "live-server": "^1.2.1",
+    "npm-run-all": "^4.1.5"
+  }
+}

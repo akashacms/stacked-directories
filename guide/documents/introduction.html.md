@@ -1,5 +1,5 @@
 ---
-layout: ebook-page.html.ejs
+layout: ebook-page.html.njk
 title: Introduction to Stacked Directories
 # bookHomeURL: 'toc.html'
 ---
