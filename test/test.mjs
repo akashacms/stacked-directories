@@ -283,11 +283,6 @@ describe('Overlaid directories', function() {
                     name, info
                 });
             });
-            ready = new Promise((resolve, reject) => {
-                try {
-                    watcher.on('ready', (name) => { resolve(name); });
-                } catch (err) { reject(err); }
-            });
             await watcher.watch([
                 { mounted: 'partials-example',      mountPoint: '/' },
                 { mounted: 'partials-bootstrap',    mountPoint: '/' },
@@ -297,6 +292,14 @@ describe('Overlaid directories', function() {
                 { mounted: 'partials-blog-podcast', mountPoint: '/' },
                 { mounted: 'partials-base',         mountPoint: '/' },
             ]);
+            ready = await new Promise((resolve, reject) => {
+                try {
+                    watcher.on('ready', (name) => {
+                        // console.log(`watcher on 'ready' for ${name}`);
+                        resolve(name); 
+                    });
+                } catch (err) { reject(err); }
+            });
             
         } catch (e) {
             console.error(e);
@@ -488,15 +491,18 @@ describe('Documents dual with mounted', function() {
                     name, info
                 });
             });
-            ready = new Promise((resolve, reject) => {
-                try {
-                    watcher.on('ready', (name) => { resolve(name); });
-                } catch (err) { reject(err); }
-            });
             watcher.watch([
                 { mounted: 'documents-example',       mountPoint: '/' },
                 { mounted: 'documents-epub-skeleton', mountPoint: 'epub' }
             ]);
+            ready = await new Promise((resolve, reject) => {
+                try {
+                    watcher.on('ready', (name) => {
+                        // console.log(`watcher on 'ready' for ${name}`);
+                        resolve(name); 
+                    });
+                } catch (err) { reject(err); }
+            });
 
         } catch (e) {
             console.error(e);
@@ -625,11 +631,6 @@ describe('Documents dual with mounted with ignored files', function() {
                     name, info
                 });
             });
-            ready = new Promise((resolve, reject) => {
-                try {
-                    watcher.on('ready', (name) => { resolve(name); });
-                } catch (err) { reject(err); }
-            });
             watcher.watch([
                 {
                     mounted: 'documents-example',
@@ -643,6 +644,14 @@ describe('Documents dual with mounted with ignored files', function() {
                 },
                 { mounted: 'documents-epub-skeleton', mountPoint: 'epub' }
             ]);
+            ready = await new Promise((resolve, reject) => {
+                try {
+                    watcher.on('ready', (name) => {
+                        // console.log(`watcher on 'ready' for ${name}`);
+                        resolve(name); 
+                    });
+                } catch (err) { reject(err); }
+            });
             
         } catch (e) {
             console.error(e);
@@ -825,11 +834,6 @@ describe('Add event post-Ready', function() {
                     name, info
                 });
             });
-            ready = new Promise((resolve, reject) => {
-                try {
-                    watcher.on('ready', (name) => { resolve(name); });
-                } catch (err) { reject(err); }
-            });
             await watcher.watch([
                 { mounted: 'partials-example',      mountPoint: '/' },
                 { mounted: 'partials-bootstrap',    mountPoint: '/' },
@@ -839,6 +843,14 @@ describe('Add event post-Ready', function() {
                 { mounted: 'partials-blog-podcast', mountPoint: '/' },
                 { mounted: 'partials-base',         mountPoint: '/' },
             ]);
+            ready = await new Promise((resolve, reject) => {
+                try {
+                    watcher.on('ready', (name) => {
+                        // console.log(`watcher on 'ready' for ${name}`);
+                        resolve(name); 
+                    });
+                } catch (err) { reject(err); }
+            });
 
         } catch (e) {
             console.error(e);
@@ -1107,11 +1119,6 @@ describe('Change and Unlink events post-Ready', function() {
                     name, info
                 });
             });
-            ready = new Promise((resolve, reject) => {
-                try {
-                    watcher.on('ready', (name) => { resolve(name); });
-                } catch (err) { reject(err); }
-            });
             await watcher.watch([
                 { mounted: 'partials-example',      mountPoint: '/' },
                 { mounted: 'partials-bootstrap',    mountPoint: '/' },
@@ -1121,6 +1128,14 @@ describe('Change and Unlink events post-Ready', function() {
                 { mounted: 'partials-blog-podcast', mountPoint: '/' },
                 { mounted: 'partials-base',         mountPoint: '/' },
             ]);
+            ready = await new Promise((resolve, reject) => {
+                try {
+                    watcher.on('ready', (name) => {
+                        // console.log(`watcher on 'ready' for ${name}`);
+                        resolve(name); 
+                    });
+                } catch (err) { reject(err); }
+            });
 
         } catch (e) {
             console.error(e);
