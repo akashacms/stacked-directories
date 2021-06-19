@@ -1,11 +1,8 @@
 {
   "name": "@akashacms/stacked-dirs",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "",
   "main": "lib/watcher.mjs",
-  "bin": {
-    "akashawatcher": "lib/cli.mjs"
-  },
   "scripts": {
     "dopublish": "npm publish --access public"
   },
