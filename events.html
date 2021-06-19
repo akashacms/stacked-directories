@@ -1,0 +1,297 @@
+<!doctype html>
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!-- Consider adding a manifest.appcache: h5bp.com/d/Offline -->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width">
+
+
+
+
+<title>Stacked Directory events</title>
+
+
+
+
+
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+<meta name="pagename" content="Stacked Directory events">
+
+
+
+
+
+
+
+
+
+
+
+<meta name="DC.title" content="Stacked Directory events">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- OpenGraph Meta Tags -->
+
+<meta name="og:title" content="Stacked Directory events">
+
+<meta name="og:url" content="https://github.io/akashacms/stacked-directories/events.html">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="canonical" href="https://github.io/akashacms/stacked-directories/events.html">
+
+
+<link rel="sitemap" type="application/xml" href="sitemap.xml" title="Sitemap">
+
+
+
+
+
+
+
+
+<link rel="stylesheet" type="text/css" href="akasha/epub-website/style.css"><link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css"><link rel="stylesheet" type="text/css" href="vendor/fontawesome-free/css/all.min.css">
+
+
+<style>
+#container { padding-top: 5px; }
+</style>
+</head>
+<body class="ebook-page">
+
+<span>
+    <a href="index.html">Home</a>
+    | <a href="introduction.html">Introduction</a>
+    | <a href="configuration.html">Configuration</a>
+    | <a href="override.html">Overriding files</a>
+    | <a href="events.html">Events</a>
+</span>
+
+<div id="container" class="container">
+
+    <header class="epub-website-ebook-masthead" id="ebook-masthead">
+  <table border="0"><tr>
+      
+      <td class="epub-website-ebook-masthead-title">
+          
+      </td>
+  </tr></table>
+</header>
+
+    <div class="panel panel-default">
+        <div class="panel-heading epub-website-ebook-navigation-header" id="ebook-navigation">
+
+
+
+<div class="epub-website-ebook-chapter-area">
+<a href="configuration.html">
+    <span class="fas fa-chevron-left" aria-hidden="true" style></span>
+    <span class="fas fa-chevron-left" aria-hidden="true" style></span>
+    <span class="fas fa-chevron-left" aria-hidden="true" style></span>
+    <span class="fas fa-chevron-left" aria-hidden="true" style></span>
+</a>
+
+<h1 class="panel-title" align="center" style>Stacked Directory events</h1>
+
+<a href="override.html">
+    <span class="fas fa-chevron-right" aria-hidden="true" style="display: inline"></span>
+    <span class="fas fa-chevron-right" aria-hidden="true" style="display: inline"></span>
+    <span class="fas fa-chevron-right" aria-hidden="true" style="display: inline"></span>
+    <span class="fas fa-chevron-right" aria-hidden="true" style="display: inline"></span>
+</a>
+</div>
+
+</div>
+
+        <div id="book-page-content" class="panel-body">
+            
+            <div id="book-page-content" class="panel-body"><p>Once you have configured a DirsWatcher instance (see <a href="configuration.html" title="Installing and configuring the Stacked Directories package">Installing and configuring the Stacked Directories package</a>), you will have a JavaScript object that is sending out events.  It uses the normal EventEmitter interface paradigm.</p>
+<p>The recommended usage is:</p>
+<pre><code class="language-js">const watcher = new DirsWatcher(&apos;watcher-name&apos;);
+
+watcher.on(&apos;change&apos;, (name, vpinfo) =&gt; { ... });
+watcher.on(&apos;add&apos;, (name, vpinfo) =&gt; { ... });
+watcher.on(&apos;unlink&apos;, (name, vpinfo) =&gt; { ... });
+watcher.on(&apos;ready&apos;, (name) =&gt; { ... });
+
+await watcher.watch([ ... ]);
+</code></pre>
+<p>This ensures the event handlers are configured before DirsWatcher starts watching the directories in the stack.  In this way, your application will not miss any events.</p>
+<p>The DirsWatcher instance will stay active until your application calls the <code>watcher.close</code> method.  One effect is that Node.js will not exit until you do so, because it is keeping the Node.js event loop active.</p>
+<h1>The Add event</h1>
+<p><em>Add</em> events are sent for files added to the directory stack.</p>
+<p>These events are sent with the signature:</p>
+<pre><code class="language-js">function (name, vpinfo) { ... }
+</code></pre>
+<p>The <code>name</code> parameter contains the name of the DirsWatcher instance.  The <code>vpinfo</code> parameter contains a data structure describing the file and any instances in the directory stack.  That structure is discussed below.</p>
+<p>While performing the initial scan of the directories <em>Add</em> events are sent for every file.  Once the <code>ready</code> event is sent, the initial scan is stopped.  Afterward <em>Add</em> events are only sent for newly added files.</p>
+<p>Whether an event is sent depends on the position of the added file within the directory stack.  Remember the discussion of precedence order in <a href="index.html" title="Stacked Directories for static website generation">Stacked Directories for static website generation</a>.</p>
+<p>With a directory stack:</p>
+<pre><code class="language-js">await watcher.watch([
+    { mounted: &apos;documents-main&apos;,  mountPoint: &apos;/&apos; },
+    { mounted: &apos;documents-guide&apos;, mountPoint: &apos;guide&apos; },
+    { mounted: &apos;documents-blog&apos;,  mountPoint: &apos;blog&apos; }
+]);
+</code></pre>
+<p>Then consider these files:</p>
+<table>
+<thead>
+<tr>
+<th>Directory</th>
+<th>Path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>documents-main</code></td>
+<td><code>blog/2021/announcement.html.md</code></td>
+</tr>
+<tr>
+<td><code>documents-blog</code></td>
+<td><code>2021/announcement.html.md</code></td>
+</tr>
+</tbody>
+</table>
+<p>Both of these files have the same virtual path, <code>blog/2021/announcement.html.md</code>.  This means the copy in <code>documents-main</code> overrides the copy in <code>documents-blog</code>.</p>
+<p>Given a stack like this, is it always appropriate to send the <em>Add</em> event?  If the added file is hidden by another file, it does not make sense to send the Add event, and DirsWatcher does not do so.</p>
+<p>Consider if only <code>documents-main/blog/2021/announcement.html.md</code> exists.  If you then add the second file, <code>documents-blog/2021/announcement.html.md</code>, both have the same virtual path.  Since the first file has higher precedence, adding the second file will suppress the Add event.</p>
+<p>If it&apos;s the other way around, that only <code>documents-blog/2021/announcement.html.md</code> exists, and you then add <code>documents-main/blog/2021/announcement.html.md</code>.  In this case the Add event will be generated because the newly added file has higher precedence.</p>
+<p>The <em>vpinfo</em> object has this structure:</p>
+<ul>
+<li><code>fspath</code>: Full file system path name</li>
+<li><code>vpath</code>: Virtual path for the file</li>
+<li><code>mime</code>: MIME type</li>
+<li><code>mounted</code>: The directory where this file was found</li>
+<li><code>mountPoint</code>: Virtual directory to which the parent directory is mounted</li>
+<li><code>pathInMounted</code>: The path for this file relative to the <code>mounted</code> directory</li>
+<li><code>stack</code>: An array of <code>vpinfo</code> instances corresponding to all instances of the virtual path within the configured directory stack</li>
+</ul>
+<h1>The Change event</h1>
+<p><em>Change</em> events are sent for files which have changed.</p>
+<p>These events are sent with the signature:</p>
+<pre><code class="language-js">function (name, vpinfo) { ... }
+</code></pre>
+<p>The <code>name</code> parameter contains the name of the DirsWatcher instance.  The <code>vpinfo</code> parameter contains a data structure describing the file and any instances in the directory stack.  That structure is the same as was discussed for the <em>Add</em> event.</p>
+<p>Whether an event is sent depends on the position of the added file within the directory stack.  Remember the discussion of precedence order in <a href="index.html" title="Stacked Directories for static website generation">Stacked Directories for static website generation</a>.</p>
+<p>The considerations are almost identical to the discussion for the <em>Add</em> event.  Namely, if the changed file is hidden by another file, the <em>Change</em> event is not sent.</p>
+<p>Consider these files:</p>
+<table>
+<thead>
+<tr>
+<th>Directory</th>
+<th>Path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>documents-main</code></td>
+<td><code>blog/2021/announcement.html.md</code></td>
+</tr>
+<tr>
+<td><code>documents-blog</code></td>
+<td><code>2021/announcement.html.md</code></td>
+</tr>
+</tbody>
+</table>
+<p>A change to <code>documents-blog/2021/announcement.html.md</code> does not trigger a <em>Change</em> event.</p>
+<p>A change to <code>documents-main/blog/2021/announcement.html.md</code> does trigger a <em>Change</em> event.</p>
+<p>There is a third instance for the <em>Change</em> event, which has to do with deleting files.  If the file being deleted hides another file, then a change event is sent showing the file which has been uncovered.  That is, if <code>documents-main/blog/2021/announcement.html.md</code> is deleted, then a <em>Change</em> event is emitted describing <code>documents-blog/2021/announcement.html.md</code>.</p>
+<h1>The Unlink event</h1>
+<p><em>Unlink</em> events are sent for files which have been deleted.</p>
+<p>These events are sent with the signature:</p>
+<pre><code class="language-js">function (name, vpinfo) { ... }
+</code></pre>
+<p>The <code>name</code> parameter contains the name of the DirsWatcher instance.  The <code>vpinfo</code> parameter contains a data structure describing the file and any instances in the directory stack.  That structure is the same as was discussed for the <em>Add</em> event, but there is no <code>stack</code> member.</p>
+<p>Whether an event is sent depends on the position of the added file within the directory stack.  Remember the discussion of precedence order in <a href="index.html" title="Stacked Directories for static website generation">Stacked Directories for static website generation</a>.</p>
+<p>If the deleted file is hidden by another file, no <em>Unlink</em> event is sent.</p>
+<p>If deleting the front-most file causes a hidden file to be revealed, a <em>Change</em> event is sent instead.</p>
+<p>If there is only one file for the virtual path in the stack, then an <em>Unlink</em> event is sent.</p>
+<h1>The Ready event</h1>
+<p><em>Ready</em> events are sent when Chokidar emits its <em>Ready</em> event.  This means, the Ready event is sent when the initial directory scan is completed.</p>
+<p>These events are sent with the signature:</p>
+<pre><code class="language-js">function (name) { ... }
+</code></pre>
+<p>The <code>name</code> parameter contains the name of the DirsWatcher instance.</p>
+</div>
+            <!-- ebook-navigation-header showtoc="false" id="ebook-navigation-bottom" class="panel-heading"></ebook-navigation-header -->
+        </div>
+    </div>
+    <!-- 
+    <footer id="footer-row" class="container">
+    <partial file-name="ebook-footer.html"/>
+    <partial file-name="footer.html.ejs"></partial>
+    </footer>
+    -->
+</div>
+
+<script src="vendor/jquery/jquery.min.js"></script><script src="vendor/popper.js/umd/popper.min.js"></script><script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+<!-- partial file-name="google-analytics.html"></partial -->
+<!-- partial file-name="piwik_analytics.html"></partial -->
+
+
+</body>
+</html>

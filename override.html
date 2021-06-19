@@ -1,0 +1,213 @@
+<!doctype html>
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!-- Consider adding a manifest.appcache: h5bp.com/d/Offline -->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width">
+
+
+
+
+<title>The DirsWatcher API, and creating custom instances</title>
+
+
+
+
+
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+<meta name="pagename" content="The DirsWatcher API, and creating custom instances">
+
+
+
+
+
+
+
+
+
+
+
+<meta name="DC.title" content="The DirsWatcher API, and creating custom instances">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- OpenGraph Meta Tags -->
+
+<meta name="og:title" content="The DirsWatcher API, and creating custom instances">
+
+<meta name="og:url" content="https://github.io/akashacms/stacked-directories/override.html">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="canonical" href="https://github.io/akashacms/stacked-directories/override.html">
+
+
+<link rel="sitemap" type="application/xml" href="sitemap.xml" title="Sitemap">
+
+
+
+
+
+
+
+
+<link rel="stylesheet" type="text/css" href="akasha/epub-website/style.css"><link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css"><link rel="stylesheet" type="text/css" href="vendor/fontawesome-free/css/all.min.css">
+
+
+<style>
+#container { padding-top: 5px; }
+</style>
+</head>
+<body class="ebook-page">
+
+<span>
+    <a href="index.html">Home</a>
+    | <a href="introduction.html">Introduction</a>
+    | <a href="configuration.html">Configuration</a>
+    | <a href="override.html">Overriding files</a>
+    | <a href="events.html">Events</a>
+</span>
+
+<div id="container" class="container">
+
+    <header class="epub-website-ebook-masthead" id="ebook-masthead">
+  <table border="0"><tr>
+      
+      <td class="epub-website-ebook-masthead-title">
+          
+      </td>
+  </tr></table>
+</header>
+
+    <div class="panel panel-default">
+        <div class="panel-heading epub-website-ebook-navigation-header" id="ebook-navigation">
+
+
+
+<div class="epub-website-ebook-chapter-area">
+<a href="events.html">
+    <span class="fas fa-chevron-left" aria-hidden="true" style></span>
+    <span class="fas fa-chevron-left" aria-hidden="true" style></span>
+    <span class="fas fa-chevron-left" aria-hidden="true" style></span>
+    <span class="fas fa-chevron-left" aria-hidden="true" style></span>
+</a>
+
+<h1 class="panel-title" align="center" style>The DirsWatcher API, and creating custom instances</h1>
+
+<a href="introduction.html">
+    <span class="fas fa-chevron-right" aria-hidden="true" style="display: inline"></span>
+    <span class="fas fa-chevron-right" aria-hidden="true" style="display: inline"></span>
+    <span class="fas fa-chevron-right" aria-hidden="true" style="display: inline"></span>
+    <span class="fas fa-chevron-right" aria-hidden="true" style="display: inline"></span>
+</a>
+</div>
+
+</div>
+
+        <div id="book-page-content" class="panel-body">
+            
+            <div id="book-page-content" class="panel-body"><p>The DirsWatcher class is defined as a regular JavaScript class.  In the recommended structure we show this:</p>
+<pre><code class="language-js">const watcher = new DirsWatcher(name);
+</code></pre>
+<p>This makes <code>watcher</code> into an instance of this class.  You can create as many DirsWatcher instances as your application requires, and each will execute independently.</p>
+<p>The <em>name</em> parameter is simply the name of this instance, and is passed along with events so that your application can be certain of which DirsWatcher has sent the event.</p>
+<p>The API of this object starts with the EventEmitter class.  See: <a href="https://nodejs.org/api/events.html#events_class_eventemitter">https://nodejs.org/api/events.html#events_class_eventemitter</a></p>
+<p>The primary method, <code>on(&apos;event-name&apos;, handler function)</code>, lets your application subscribe to the DirsWatcher events.  All other EventEmitter methods are available.</p>
+<p>The attribute <code>dirs</code> returns the configured directory stack.</p>
+<p>The attribute <code>name</code> returns the <em>name</em> of the DirsWatcher instance.</p>
+<p>Calling the <code>watch</code> method tells DirsWatcher the directory stack configuration to use, and begins the process of scanning for and reporting on files.  If <code>watch</code> has already been called an error will be thrown.  To call <code>watch</code> a second time, first call <code>close</code> then call <code>watch</code>.</p>
+<p>The <code>onChange</code>, <code>onAdd</code>, <code>onUnlink</code>, and <code>onReady</code> methods handle sending the corresponding events.  These methods are listening to the Chokidar instance, and interpret the data it provides into the <code>vpinfo</code> data structure described in <a href="events.html" title="Stacked Directory events">Stacked Directory events</a></p>
+<p>The <code>getWatched</code> method calls the Chokidar <code>getWatched</code> method and returns a list of files being watched.</p>
+<p>The <code>vpathForFSPath</code> method computes the <code>vpinfo</code> object for a given filesystem path.  It does not track down the <code>stack</code> entry in this object.</p>
+<p>The <code>stackForVPath</code> method finds all files in the directory corresponding to the supplied virtual path.</p>
+<p>The <code>close</code> method shuts down the Chokidar instance, the side effect being that this DirsWatcher instance will no longer be listening for events.  To shut down a Node.js application, it is necessary to call this method for each DirsWatcher instance your application creates.</p>
+<h1>Creating a custom DirsWatcher instance</h1>
+<p>Your application may want to change the behavior, such as using a different data structure than the <code>vpinfo</code> object.</p>
+<p>Your application can implement a custom instance like so:</p>
+<pre><code class="language-js">class MyDirsWatcher extends DirsWatcher {
+    ...
+}
+</code></pre>
+<p>Then you go to town writing your own methods.</p>
+</div>
+            <!-- ebook-navigation-header showtoc="false" id="ebook-navigation-bottom" class="panel-heading"></ebook-navigation-header -->
+        </div>
+    </div>
+    <!-- 
+    <footer id="footer-row" class="container">
+    <partial file-name="ebook-footer.html"/>
+    <partial file-name="footer.html.ejs"></partial>
+    </footer>
+    -->
+</div>
+
+<script src="vendor/jquery/jquery.min.js"></script><script src="vendor/popper.js/umd/popper.min.js"></script><script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+<!-- partial file-name="google-analytics.html"></partial -->
+<!-- partial file-name="piwik_analytics.html"></partial -->
+
+
+</body>
+</html>

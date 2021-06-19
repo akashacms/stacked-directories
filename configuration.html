@@ -1,0 +1,251 @@
+<!doctype html>
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!-- Consider adding a manifest.appcache: h5bp.com/d/Offline -->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width">
+
+
+
+
+<title>Installing and configuring the Stacked Directories package</title>
+
+
+
+
+
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+<meta name="pagename" content="Installing and configuring the Stacked Directories package">
+
+
+
+
+
+
+
+
+
+
+
+<meta name="DC.title" content="Installing and configuring the Stacked Directories package">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- OpenGraph Meta Tags -->
+
+<meta name="og:title" content="Installing and configuring the Stacked Directories package">
+
+<meta name="og:url" content="https://github.io/akashacms/stacked-directories/configuration.html">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="canonical" href="https://github.io/akashacms/stacked-directories/configuration.html">
+
+
+<link rel="sitemap" type="application/xml" href="sitemap.xml" title="Sitemap">
+
+
+
+
+
+
+
+
+<link rel="stylesheet" type="text/css" href="akasha/epub-website/style.css"><link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css"><link rel="stylesheet" type="text/css" href="vendor/fontawesome-free/css/all.min.css">
+
+
+<style>
+#container { padding-top: 5px; }
+</style>
+</head>
+<body class="ebook-page">
+
+<span>
+    <a href="index.html">Home</a>
+    | <a href="introduction.html">Introduction</a>
+    | <a href="configuration.html">Configuration</a>
+    | <a href="override.html">Overriding files</a>
+    | <a href="events.html">Events</a>
+</span>
+
+<div id="container" class="container">
+
+    <header class="epub-website-ebook-masthead" id="ebook-masthead">
+  <table border="0"><tr>
+      
+      <td class="epub-website-ebook-masthead-title">
+          
+      </td>
+  </tr></table>
+</header>
+
+    <div class="panel panel-default">
+        <div class="panel-heading epub-website-ebook-navigation-header" id="ebook-navigation">
+
+
+
+<div class="epub-website-ebook-chapter-area">
+<a href="introduction.html">
+    <span class="fas fa-chevron-left" aria-hidden="true" style></span>
+    <span class="fas fa-chevron-left" aria-hidden="true" style></span>
+    <span class="fas fa-chevron-left" aria-hidden="true" style></span>
+    <span class="fas fa-chevron-left" aria-hidden="true" style></span>
+</a>
+
+<h1 class="panel-title" align="center" style>Installing and configuring the Stacked Directories package</h1>
+
+<a href="events.html">
+    <span class="fas fa-chevron-right" aria-hidden="true" style="display: inline"></span>
+    <span class="fas fa-chevron-right" aria-hidden="true" style="display: inline"></span>
+    <span class="fas fa-chevron-right" aria-hidden="true" style="display: inline"></span>
+    <span class="fas fa-chevron-right" aria-hidden="true" style="display: inline"></span>
+</a>
+</div>
+
+</div>
+
+        <div id="book-page-content" class="panel-body">
+            
+            <div id="book-page-content" class="panel-body"><p>The <code>@akashacms/stacked-dirs</code> package is currently available through its Github project, but will be added to <em>npm</em> in the due course of time.  At the moment that means installation into an <em>npm</em> project is:</p>
+<pre><code>$ npm init -y
+... set up the project
+$ npm install akashacms/stacked-directories --save
+... more project setup
+</code></pre>
+<p>It will be installed with the package name <code>@akashacms/stacked-dirs</code>.</p>
+<p>Three packages are installed as well:</p>
+<ul>
+<li><code>mime</code> - to automatically determine MIME-types for files</li>
+<li><code>chokidar</code> - to handle scanning for files, and generating events on any file update</li>
+<li><code>minimatch</code> - is used in matching file names against &quot;<em>glob</em>&quot; patterns when ignoring certain files</li>
+</ul>
+<p>In your code, a basic configuration is:</p>
+<pre><code class="language-js">let events = [];
+const name = &apos;example.com&apos;;
+const watcher = new DirsWatcher(name);
+watcher.on(&apos;change&apos;, (name, info) =&gt; {
+    // console.log(`watcher on &apos;change&apos; for ${info.vpath}`);
+    // Take action for _change_ event
+    events.push({
+        event: &apos;change&apos;,
+        name, info
+    });
+});
+watcher.on(&apos;add&apos;, (name, info) =&gt; {
+    // console.log(`watcher on &apos;add&apos; for ${info.vpath}`);
+    // Take action for _add_ event
+    events.push({
+        event: &apos;add&apos;,
+        name, info
+    });
+});
+watcher.on(&apos;unlink&apos;, (name, info) =&gt; {
+    // console.log(`watcher on &apos;unlink&apos; for ${info.vpath}`);
+    // Take action for _unlink_ event
+    events.push({
+        event: &apos;unlink&apos;,
+        name, info
+    });
+});
+await watcher.watch([
+    { mounted: &apos;documents-main&apos;,  mountPoint: &apos;/&apos; },
+    { mounted: &apos;documents-guide&apos;, mountPoint: &apos;guide&apos; },
+    { mounted: &apos;documents-blog&apos;,  mountPoint: &apos;blog&apos; }
+]);
+</code></pre>
+<p>The array passed to the <code>watch</code> method is where you describe the directory stack.</p>
+<p>Internally, <em>DirsWatcher</em> uses <em>Chokidar</em> to scan the files.  Chokidar sends its own set of events which are internally used by DirsWatcher.  The events sent by DirsWatcher are derived from the ones sent by Chokidar, depending on the directory stack configuration.</p>
+<p>One thing this means is initially DirsWatcher will emit a number of <em>add</em> events, one for each file, because Chokidar is making its initial scan of the directories.  Once the initial scan is finished, DirsWatcher goes to the <em>Ready</em> state.  This state is accessed from an exported field.</p>
+<pre><code class="language-js">let ready = await watcher.isReady;
+</code></pre>
+<p>The <em>isReady</em> field is a Promise.  The Promise is resolved once the DirsWatcher has finished the initial directory scan.  The resolved value will he <em>true</em> if the scan was successful, and <em>false</em> otherwise.</p>
+<h1>Configuring the directory stack</h1>
+<p>As we see above, the directory stack is an array of objects.  Each object describes one directory in the stack.</p>
+<p>The fields in these objects are:</p>
+<ul>
+<li><code>mounted</code>: The file system path that is to be used</li>
+<li><code>mountPoint</code>: The virtual path it is mounted to, where <code>/</code> represents a directory mounted at the root of the virtual space</li>
+<li><code>ignore</code>: An array of glob patterns of files that should be ignored.  This can be used to weed out files like <code>.DS_Store</code>.</li>
+</ul>
+</div>
+            <!-- ebook-navigation-header showtoc="false" id="ebook-navigation-bottom" class="panel-heading"></ebook-navigation-header -->
+        </div>
+    </div>
+    <!-- 
+    <footer id="footer-row" class="container">
+    <partial file-name="ebook-footer.html"/>
+    <partial file-name="footer.html.ejs"></partial>
+    </footer>
+    -->
+</div>
+
+<script src="vendor/jquery/jquery.min.js"></script><script src="vendor/popper.js/umd/popper.min.js"></script><script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+<!-- partial file-name="google-analytics.html"></partial -->
+<!-- partial file-name="piwik_analytics.html"></partial -->
+
+
+</body>
+</html>

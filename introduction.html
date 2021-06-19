@@ -1,0 +1,208 @@
+<!doctype html>
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!-- Consider adding a manifest.appcache: h5bp.com/d/Offline -->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width">
+
+
+
+
+<title>Introduction to Stacked Directories</title>
+
+
+
+
+
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+<meta name="pagename" content="Introduction to Stacked Directories">
+
+
+
+
+
+
+
+
+
+
+
+<meta name="DC.title" content="Introduction to Stacked Directories">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- OpenGraph Meta Tags -->
+
+<meta name="og:title" content="Introduction to Stacked Directories">
+
+<meta name="og:url" content="https://github.io/akashacms/stacked-directories/introduction.html">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="canonical" href="https://github.io/akashacms/stacked-directories/introduction.html">
+
+
+<link rel="sitemap" type="application/xml" href="sitemap.xml" title="Sitemap">
+
+
+
+
+
+
+
+
+<link rel="stylesheet" type="text/css" href="akasha/epub-website/style.css"><link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css"><link rel="stylesheet" type="text/css" href="vendor/fontawesome-free/css/all.min.css">
+
+
+<style>
+#container { padding-top: 5px; }
+</style>
+</head>
+<body class="ebook-page">
+
+<span>
+    <a href="index.html">Home</a>
+    | <a href="introduction.html">Introduction</a>
+    | <a href="configuration.html">Configuration</a>
+    | <a href="override.html">Overriding files</a>
+    | <a href="events.html">Events</a>
+</span>
+
+<div id="container" class="container">
+
+    <header class="epub-website-ebook-masthead" id="ebook-masthead">
+  <table border="0"><tr>
+      
+      <td class="epub-website-ebook-masthead-title">
+          
+      </td>
+  </tr></table>
+</header>
+
+    <div class="panel panel-default">
+        <div class="panel-heading epub-website-ebook-navigation-header" id="ebook-navigation">
+
+
+
+<div class="epub-website-ebook-chapter-area">
+<a href="override.html">
+    <span class="fas fa-chevron-left" aria-hidden="true" style></span>
+    <span class="fas fa-chevron-left" aria-hidden="true" style></span>
+    <span class="fas fa-chevron-left" aria-hidden="true" style></span>
+    <span class="fas fa-chevron-left" aria-hidden="true" style></span>
+</a>
+
+<h1 class="panel-title" align="center" style>Introduction to Stacked Directories</h1>
+
+<a href="configuration.html">
+    <span class="fas fa-chevron-right" aria-hidden="true" style="display: inline"></span>
+    <span class="fas fa-chevron-right" aria-hidden="true" style="display: inline"></span>
+    <span class="fas fa-chevron-right" aria-hidden="true" style="display: inline"></span>
+    <span class="fas fa-chevron-right" aria-hidden="true" style="display: inline"></span>
+</a>
+</div>
+
+</div>
+
+        <div id="book-page-content" class="panel-body">
+            
+            <div id="book-page-content" class="panel-body"><p>In applications like static website generators, it is desired to include a dynamic builder/previewer/watcher mode to automatically rebuild the website every time a file changes.  When a new file is added, or if an existing file is changed, or if an existing file is deleted (unlinked), some or all of the website must be rebuilt.  Then for full enjoyment, once the rebuild finishes a web browser tab can be automatically reloaded.  That way an author can be editing their file, type COMMAND-S to save the file, and automatically a good quality preview shows up in a web browser.</p>
+<p>The <code>@akashacms/stacked-dirs</code> package was created to serve that purpose within the AkashaCMS ecosystem.  This package was designed to independent enough to be used by any other package, because there is no dependency on the rest of AkashaCMS.</p>
+<p>The concept of <em>Stacked Directories</em> comes from AkashaCMS.  That is, a particular kind of file might be supplied by bringing together multiple directories from multiple sources.  The general concept is</p>
+<ul>
+<li>There is a virtual filesystem space created by merging content from one or more input directories in the filesystem.   ... <code>[ d1, d2, d3, d4, d5 ... ] ==&gt; d-output</code></li>
+<li>Each input directory (<code>d1</code>, etc) is mounted either to the root of the virtual filesystem, or a subdirectory.</li>
+<li>Each file in each input directory has a virtual path constructed by concatenating the virtual path to the path within the directory.  For example if <code>d2</code> is the directory <code>node_modules/bootstrap/dist</code>, and is mounted to the virtual path <code>/vendor/bootstrap</code>, then <code>js/bootstrap.min.js</code> has the virtual path <code>/vendor/bootstrap/js/bootstrap.min.js</code>.</li>
+<li>The files are considered in precedence order, which applies when two or more files have the same virtual path.  Of those files, the file which to be used is the one in the frontmost directory of the stack.  For example you might have a stack with two directories, <code>partials-bootstrap</code> and <code>partials-blog-podcas</code>.  You could have a base template <code>partials-blog-podcast/blog-news-river.html.ejs</code>, and another instance of this template as <code>partials-bootstrap/blog-news-river.html.ejs</code>.  With the precedence order just described the file in <code>partials-bootstrap</code> would be used.</li>
+</ul>
+<p>In this example <code>partials-blog-podcast/blog-news-river.html.ejs</code> is said to be <em>hidden</em> by <code>partials-bootstrap/blog-news-river.html.ejs</code>, because the latter is higher in the order of precedence.</p>
+<p>The <em>kinds</em> of files considered in AkashaCMS are:</p>
+<ul>
+<li><em>Assets</em> are files which are simply copied to the output directory unchanged.</li>
+<li><em>Documents</em> are files which are rendered from Markdown, AsciiDoc, or other formats, into HTML.</li>
+<li><em>Layouts</em> are template files describing the overall page layout.</li>
+<li><em>Partials</em> are template files describing the format of snippets on the page.</li>
+</ul>
+<p>With <code>@akashacms/stacked-dirs</code>, AkashaRender (the core of AkashaCMS) constructs four Directory Stacks based on individual project configuration.</p>
+</div>
+            <!-- ebook-navigation-header showtoc="false" id="ebook-navigation-bottom" class="panel-heading"></ebook-navigation-header -->
+        </div>
+    </div>
+    <!-- 
+    <footer id="footer-row" class="container">
+    <partial file-name="ebook-footer.html"/>
+    <partial file-name="footer.html.ejs"></partial>
+    </footer>
+    -->
+</div>
+
+<script src="vendor/jquery/jquery.min.js"></script><script src="vendor/popper.js/umd/popper.min.js"></script><script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+<!-- partial file-name="google-analytics.html"></partial -->
+<!-- partial file-name="piwik_analytics.html"></partial -->
+
+
+</body>
+</html>
