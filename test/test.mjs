@@ -254,6 +254,7 @@ describe('Overlaid directories', function() {
 
     let watcher;
     let events = [];
+    let ready;
     const name = 'test-overlaid';
 
     it('should successfully load Partials directories', async function() {
@@ -282,6 +283,11 @@ describe('Overlaid directories', function() {
                     name, info
                 });
             });
+            ready = new Promise((resolve, reject) => {
+                try {
+                    watcher.on('ready', (name) => { resolve(name); });
+                } catch (err) { reject(err); }
+            });
             await watcher.watch([
                 { mounted: 'partials-example',      mountPoint: '/' },
                 { mounted: 'partials-bootstrap',    mountPoint: '/' },
@@ -301,8 +307,8 @@ describe('Overlaid directories', function() {
     it('should get Ready with overlaid directories documents watcher', async function() {
         this.timeout(25000);
         try {
-            let ready = await watcher.isReady;
-            assert.isOk(ready);
+            let readier = await ready;
+            assert.isOk(readier);
         } catch (e) {
             console.error(e);
             throw e;
@@ -453,6 +459,7 @@ describe('Documents dual with mounted', function() {
 
     let watcher;
     let events = [];
+    let ready;
     const name = 'test-mounted';
 
     it('should successfully load dual mounted documents directories', async function() {
@@ -481,6 +488,11 @@ describe('Documents dual with mounted', function() {
                     name, info
                 });
             });
+            ready = new Promise((resolve, reject) => {
+                try {
+                    watcher.on('ready', (name) => { resolve(name); });
+                } catch (err) { reject(err); }
+            });
             watcher.watch([
                 { mounted: 'documents-example',       mountPoint: '/' },
                 { mounted: 'documents-epub-skeleton', mountPoint: 'epub' }
@@ -495,8 +507,8 @@ describe('Documents dual with mounted', function() {
     it('should get Ready with overlaid directories documents watcher', async function() {
         this.timeout(25000);
         try {
-            let ready = await watcher.isReady;
-            assert.isOk(ready);
+            let readier = await ready;
+            assert.isOk(readier);
         } catch (e) {
             console.error(e);
             throw e;
@@ -584,6 +596,7 @@ describe('Documents dual with mounted with ignored files', function() {
 
     let watcher;
     let events = [];
+    let ready;
     const name = 'test-mounted-ignored';
 
     it('should successfully load dual mounted documents directories', async function() {
@@ -612,6 +625,11 @@ describe('Documents dual with mounted with ignored files', function() {
                     name, info
                 });
             });
+            ready = new Promise((resolve, reject) => {
+                try {
+                    watcher.on('ready', (name) => { resolve(name); });
+                } catch (err) { reject(err); }
+            });
             watcher.watch([
                 {
                     mounted: 'documents-example',
@@ -635,8 +653,8 @@ describe('Documents dual with mounted with ignored files', function() {
     it('should get Ready with overlaid directories documents watcher', async function() {
         this.timeout(25000);
         try {
-            let ready = await watcher.isReady;
-            assert.isOk(ready);
+            let readier = await ready;
+            assert.isOk(readier);
         } catch (e) {
             console.error(e);
             throw e;
@@ -778,6 +796,7 @@ describe('Add event post-Ready', function() {
 
     let watcher;
     let events = [];
+    let ready;
     const name = 'test-add-event';
 
     it('should successfully load overridden documents directories', async function() {
@@ -805,6 +824,11 @@ describe('Add event post-Ready', function() {
                     event: 'unlink',
                     name, info
                 });
+            });
+            ready = new Promise((resolve, reject) => {
+                try {
+                    watcher.on('ready', (name) => { resolve(name); });
+                } catch (err) { reject(err); }
             });
             await watcher.watch([
                 { mounted: 'partials-example',      mountPoint: '/' },
@@ -836,8 +860,8 @@ describe('Add event post-Ready', function() {
     it('should get Ready with overlaid directories documents watcher', async function() {
         this.timeout(25000);
         try {
-            let ready = await watcher.isReady;
-            assert.isOk(ready);
+            let readier = await ready;
+            assert.isOk(readier);
         } catch (e) {
             console.error(e);
             throw e;
@@ -1054,6 +1078,7 @@ describe('Change and Unlink events post-Ready', function() {
 
     let watcher;
     let events = [];
+    let ready;
     const name = 'test-add-event';
 
     it('should successfully load overridden documents directories', async function() {
@@ -1082,6 +1107,11 @@ describe('Change and Unlink events post-Ready', function() {
                     name, info
                 });
             });
+            ready = new Promise((resolve, reject) => {
+                try {
+                    watcher.on('ready', (name) => { resolve(name); });
+                } catch (err) { reject(err); }
+            });
             await watcher.watch([
                 { mounted: 'partials-example',      mountPoint: '/' },
                 { mounted: 'partials-bootstrap',    mountPoint: '/' },
@@ -1109,8 +1139,8 @@ describe('Change and Unlink events post-Ready', function() {
     it('should get Ready with overlaid directories documents watcher', async function() {
         this.timeout(25000);
         try {
-            let ready = await watcher.isReady;
-            assert.isOk(ready);
+            let readier = await ready;
+            assert.isOk(readier);
         } catch (e) {
             console.error(e);
             throw e;
