@@ -6,6 +6,9 @@
   "bin": {
     "akashawatcher": "lib/cli.mjs"
   },
+  "scripts": {
+    "dopublish": "npm publish --access public"
+  },
   "keywords": [],
   "author": "David Herron <david@davidherron.com>",
   "license": "ISC",
