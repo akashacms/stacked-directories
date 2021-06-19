@@ -1,8 +1,6 @@
 ---
 layout: default.html.ejs
-title: Affiliate Title
+title: Affiliate overlay page
 ---
 
-This is the Affiliate content
-
-This page overlays another
+Overriding of `affiliate.html.md`

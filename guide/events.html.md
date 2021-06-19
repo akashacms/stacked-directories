@@ -14,7 +14,7 @@ const watcher = new DirsWatcher('watcher-name');
 watcher.on('change', (name, vpinfo) => { ... });
 watcher.on('add', (name, vpinfo) => { ... });
 watcher.on('unlink', (name, vpinfo) => { ... });
-watcher.on('ready', (name, vpinfo) => { ... });
+watcher.on('ready', (name) => { ... });
 
 await watcher.watch([ ... ]);
 ```
