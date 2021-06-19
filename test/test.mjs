@@ -309,9 +309,10 @@ describe('Overlaid directories', function() {
         }
     });
 
-    it('should find authorship-disabled', async function() {
+    it('should find ak_linkreltag.html.ejs', async function() {
         let found;
         for (let event of events) {
+            console.log(`event.info.vpath ${event.info.vpath} === ak_linkreltag.html.ejs ??`);
             if (event.event === 'add' && event.info.vpath === 'ak_linkreltag.html.ejs') {
                 found = event;
                 break;
