@@ -1,12 +1,22 @@
 {
   "name": "@akashacms/stacked-dirs",
-  "version": "0.8.1",
-  "description": "",
+  "version": "0.8.2",
+  "description": "Automatically watch for changes in stacked directories",
+  "bugs": "https://github.com/akashacms/stacked-directories/issues",
+  "homepage": "https://akashacms.github.io/stacked-directories/",
   "main": "lib/watcher.mjs",
   "scripts": {
     "dopublish": "npm publish --access public"
   },
-  "keywords": [],
+  "keywords": [
+      "static website generator",
+      "generator",
+      "watcher",
+      "watchFile",
+      "watching",
+      "cms",
+      "website"
+  ],
   "author": "David Herron <david@davidherron.com>",
   "license": "ISC",
   "dependencies": {

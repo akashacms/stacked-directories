@@ -1,4 +1,4 @@
-# Automatically watch for changed in stacked directories
+# Automatically watch for changes in stacked directories
 
 In applications like static website generators, it is desired to include a dynamic builder/previewer/watcher mode to automatically rebuild the website every time a file changes.  When a new file is added, or if an existing file is changed, or if an existing file is deleted (unlinked), some or all of the website must be rebuilt.  Then for full enjoyment, once the rebuild finishes a web browser tab can be automatically reloaded.  That way an author can be editing their file, type COMMAND-S to save the file, and automatically a good quality preview shows up in a web browser.
 

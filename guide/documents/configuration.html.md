@@ -4,12 +4,12 @@ title: Installing and configuring the Stacked Directories package
 # bookHomeURL: 'toc.html'
 ---
 
-The `@akashacms/stacked-dirs` package is currently available through its Github project, but will be added to _npm_ in the due course of time.  At the moment that means installation into an _npm_ project is:
+The `@akashacms/stacked-dirs` package is available through _npm_.  That means installation into an _npm_ project is:
 
 ```
 $ npm init -y
 ... set up the project
-$ npm install akashacms/stacked-directories --save
+$ npm install @akashacms/stacked-dirs --save
 ... more project setup
 ```
 
@@ -69,6 +69,21 @@ let ready = await watcher.isReady;
 ```
 
 The _isReady_ field is a Promise.  The Promise is resolved once the DirsWatcher has finished the initial directory scan.  The resolved value will he _true_ if the scan was successful, and _false_ otherwise.
+
+If that turns out to not be reliable, in the test suite we found it necessary to do this instead:
+
+```js
+let ready = await new Promise((resolve, reject) => {
+    try {
+        watcher.on('ready', (name) => {
+            // console.log(`watcher on 'ready' for ${name}`);
+            resolve(name); 
+        });
+    } catch (err) { reject(err); }
+});
+```
+
+The effect is the same, which is to use `await` to wait for the `ready` event to be sent.  This way is more explicit, however.
 
 # Configuring the directory stack
 
