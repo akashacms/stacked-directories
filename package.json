@@ -9,18 +9,19 @@
     "dopublish": "npm publish --access public"
   },
   "keywords": [
-      "static website generator",
-      "generator",
-      "watcher",
-      "watchFile",
-      "watching",
-      "cms",
-      "website"
+    "static website generator",
+    "generator",
+    "watcher",
+    "watchFile",
+    "watching",
+    "cms",
+    "website"
   ],
   "author": "David Herron <david@davidherron.com>",
   "license": "ISC",
   "dependencies": {
     "chokidar": "^3.4.2",
+    "fastq": "^1.11.1",
     "mime": "^2.4.6",
     "minimatch": "^3.0.4"
   }

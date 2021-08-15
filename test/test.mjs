@@ -12,6 +12,8 @@ describe('Documents simple', function() {
     let events = [];
     const name = 'test-simple';
 
+    let watcherReady;
+
     it('should set up simple documents watcher', async function() {
         try {
             watcher = new DirsWatcher(name);
@@ -36,6 +38,11 @@ describe('Documents simple', function() {
                     name, info
                 });
             });
+            watcherReady = new Promise((resolve, reject) => {
+                watcher.on('ready', () => {
+                    resolve(true);
+                });
+            })
             await watcher.watch([
                 { mounted: 'documents-example',      mountPoint: '/' }
             ]);
@@ -48,7 +55,7 @@ describe('Documents simple', function() {
     it('should get Ready with simple documents watcher', async function() {
         this.timeout(25000);
         try {
-            let ready = await watcher.isReady;
+            let ready = await watcherReady;
             assert.isOk(ready);
         } catch (e) {
             console.error(e);
@@ -321,7 +328,7 @@ describe('Overlaid directories', function() {
     it('should find ak_linkreltag.html.ejs', async function() {
         let found;
         for (let event of events) {
-            console.log(`event.info.vpath ${event.info.vpath} === ak_linkreltag.html.ejs ??`);
+            // console.log(`event.info.vpath ${event.info.vpath} === ak_linkreltag.html.ejs ??`);
             if (event.event === 'add' && event.info.vpath === 'ak_linkreltag.html.ejs') {
                 found = event;
                 break;
