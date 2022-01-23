@@ -1,12 +1,23 @@
 
-import { promises as fs } from 'fs';
+import {
+    promises as fs,
+    Stats
+} from 'fs';
 import { default as chokidar } from 'chokidar';
-import { default as mime } from 'mime';
+import * as mime from 'mime';
+/* const mime = { 
+    getType: mime_pkg.getType,
+    getExtension: mime_pkg.getExtension,
+    define: mime_pkg.define
+}; */
+// import { getType, getExtension, define as mime_define } from 'mime';
 import * as util from 'util';
 import * as path from 'path';
-import EventEmitter from 'events';
+import { EventEmitter } from 'events';
 import minimatch from 'minimatch';
-import fastq from 'fastq';
+import * as fastq from 'fastq';
+import type { queueAsPromised } from "fastq";
+
 
 // NOTE We should not do this here.  It had been copied over from
 // AkashaRender, but this is duplicative, and it's possible there
@@ -16,6 +27,64 @@ import fastq from 'fastq';
 // per: https://asciidoctor.org/docs/faq/
 // per: https://github.com/asciidoctor/asciidoctor/issues/2502
 // mime.define({'text/x-asciidoc': ['adoc', 'asciidoc']});
+
+
+export class VPathData {
+    fspath: string;
+    vpath: string;
+    mime: string;
+    mounted: string;
+    mountPoint: string;
+    pathInMounted: string;
+    stack ?: VPathData[];
+}
+
+const isVPathData = (vpinfo): vpinfo is VPathData => {
+    if (typeof vpinfo === 'undefined') return false;
+    if (typeof vpinfo !== 'object') return false;
+    if (typeof vpinfo.fspath !== 'string'
+     || typeof vpinfo.vpath !== 'string'
+     || typeof vpinfo.mime !== 'string'
+     || typeof vpinfo.mounted !== 'string'
+     || typeof vpinfo.mountPoint !== 'string'
+     || typeof vpinfo.pathInMounted !== 'string') {
+        return false;
+    }
+    if (typeof vpinfo.stack === 'undefined') return true;
+    if (Array.isArray(vpinfo.stack)) {
+        for (let inf of vpinfo.stack) {
+            if (!isVPathData(inf)) return false;
+        }
+    }
+    return true;
+};
+
+type queueEvent = {
+    code: string;
+    fpath?: string;
+    stats?: Stats;
+};
+
+const isQueueEvent = (event): event is queueEvent => {
+    if (typeof event === 'undefined') return false;
+    if (typeof event !== 'object') return false;
+
+    if (typeof event.code === 'string'
+     && typeof event.fpath === 'string'
+     && (event.stats instanceof Stats)) {
+        return true;
+    }
+    if (typeof event.code === 'string'
+     && event.code === 'ready') {
+        return true;
+    }
+    if (typeof event.code === 'string'
+     && event.code === 'unlink'
+     && typeof event.fpath === 'string') {
+        return true;
+    }
+    return false;
+}
 
 const _symb_dirs = Symbol('dirs');
 const _symb_watcher = Symbol('watcher');
@@ -39,17 +108,27 @@ export class DirsWatcher extends EventEmitter {
         };
         this[_symb_cwd] = undefined;
         let that = this;
-        this[_symb_queue] = fastq.promise(async function(event) {
-            if (event.code === 'change') {
-                await that.onChange(event.fpath, event.stats);
-            } else if (event.code === 'add') {
-                await that.onAdd(event.fpath, event.stats);
-            } else if (event.code === 'unlink') {
-                await that.onUnlink(event.fpath);
-            } else if (event.code === 'ready') {
-                await that.onReady();
+        const q: queueAsPromised<queueEvent> = fastq.promise(
+            async function(event: queueEvent) {
+                if (!isQueueEvent(event)) {
+                    throw new Error(`INTERNAL ERROR not a queueEvent ${util.inspect(event)}`);
+                }
+                if (event.code === 'change') {
+                    await that.onChange(event.fpath, event.stats);
+                } else if (event.code === 'add') {
+                    await that.onAdd(event.fpath, event.stats);
+                } else if (event.code === 'unlink') {
+                    await that.onUnlink(event.fpath);
+                } else if (event.code === 'ready') {
+                    await that.onReady();
+                }
+            }, 1);
+        this[_symb_queue] = q;
+        this[_symb_queue].error(function(err, task) {
+            if (err) {
+                console.error(`DirsWatcher ${name} ${task.code} ${task.fpath} caught error ${err}`);
             }
-        }, 1);
+        });
     }
 
     get dirs() { return this[_symb_dirs]; }
@@ -61,6 +140,10 @@ export class DirsWatcher extends EventEmitter {
      * you specify to watch must be relative to the given directory.
      */
     set basedir(cwd) { this[_symb_cwd] = cwd; }
+
+    mimedefine(mapping) {
+        mime.define(mapping);
+    }
 
     /**
      * Creates the Chokidar watcher, basec on the directories to watch.  The <em>dirspec</em> option can be a string,
@@ -86,7 +169,7 @@ export class DirsWatcher extends EventEmitter {
         }
         if (typeof dirs === 'string') {
             dirs = [ {
-                src: dirspec, dest: '/'
+                src: dirs, dest: '/'
             } ];
         } else if (typeof dirs === 'object' && !Array.isArray(dirs)) {
             dirs = [ dirs ];
@@ -123,18 +206,20 @@ export class DirsWatcher extends EventEmitter {
         // All this function does is to receive events from Chokidar,
         // construct FileInfo objects, and emit matching events.
 
+        const watcher_name = this.name;
+
         this[_symb_watcher]
             .on('change', async (fpath, stats) => {
-                this[_symb_queue].push({
+                this[_symb_queue].push(<queueEvent>{
                     code: 'change', fpath, stats
                 });
-                // console.log(`watcher change ${fpath}`);
+                // console.log(`watcher ${watcher_name} change ${fpath}`);
             })
             .on('add', async (fpath, stats) => {
-                this[_symb_queue].push({
+                this[_symb_queue].push(<queueEvent>{
                     code: 'add', fpath, stats
                 });
-                // console.log(`watcher add ${fpath}`);
+                // console.log(`watcher ${watcher_name} add ${fpath}`);
             })
             /* .on('addDir', async (fpath, stats) => { 
                 // ?? let info = this.fileInfo(fpath, stats);
@@ -142,10 +227,10 @@ export class DirsWatcher extends EventEmitter {
                 // ?? this.emit('addDir', info);
             }) */
             .on('unlink', async fpath => {
-                this[_symb_queue].push({
+                this[_symb_queue].push(<queueEvent>{
                     code: 'unlink', fpath
                 });
-                // console.log(`watcher unlink ${fpath}`);
+                // console.log(`watcher ${watcher_name} unlink ${fpath}`);
             })
             /* .on('unlinkDir', async fpath => { 
                 // ?? let info = this.fileInfo(fpath, stats);
@@ -153,10 +238,10 @@ export class DirsWatcher extends EventEmitter {
                 // ?? this.emit('unlinkDir', info);
             }) */
             .on('ready', () => {
-                this[_symb_queue].push({
+                this[_symb_queue].push(<queueEvent>{
                     code: 'ready'
                 });
-                // console.log(`watcher ready`);
+                // console.log(`watcher ${watcher_name} ready`);
             });
 
         // this.isReady = new Promise((resolve, reject) => {
@@ -168,7 +253,7 @@ export class DirsWatcher extends EventEmitter {
     /* Calculate the stack for a filesystem path
 
     Only emit if the change was to the front-most file */ 
-    async onChange(fpath, stats) {
+    async onChange(fpath: string, stats: Stats): Promise<void> {
         let vpinfo = this.vpathForFSPath(fpath);
         if (!vpinfo) {
             console.log(`onChange could not find mount point or vpath for ${fpath}`);
@@ -203,7 +288,7 @@ export class DirsWatcher extends EventEmitter {
     }
 
     // Only emit if the add was the front-most file
-    async onAdd(fpath, stats) {
+    async onAdd(fpath: string, stats: Stats): Promise<void> {
         let vpinfo = this.vpathForFSPath(fpath);
         if (!vpinfo) {
             console.log(`onAdd could not find mount point or vpath for ${fpath}`);
@@ -249,13 +334,13 @@ export class DirsWatcher extends EventEmitter {
 
     /* Only emit if it was the front-most file deleted
     If there is a file uncovered by this, then emit an add event for that */
-    async onUnlink(fpath) {
+    async onUnlink(fpath: string): Promise<void> {
         let vpinfo = this.vpathForFSPath(fpath);
         if (!vpinfo) {
             console.log(`onUnlink could not find mount point or vpath for ${fpath}`);
             return;
         }
-        let stack = await this.stackForVPath(vpinfo.vpath);
+        let stack: VPathData[] = await this.stackForVPath(vpinfo.vpath);
         if (stack.length === 0) {
             /* If no files remain in the stack for this virtual path, then
              * we must declare it unlinked.
@@ -267,7 +352,7 @@ export class DirsWatcher extends EventEmitter {
              * a change event.
              */
             let sfirst = stack[0];
-            this.emit('change', this.name, {
+            this.emit('change', this.name, <VPathData>{
                 fspath: sfirst.fspath,
                 vpath: sfirst.vpath,
                 mime: mime.getType(sfirst.fspath),
@@ -282,7 +367,7 @@ export class DirsWatcher extends EventEmitter {
         // if (info) this.emit('unlink', this.name, info);
     }
 
-    onReady() {
+    onReady(): void {
         // console.log('DirsWatcher: Initial scan complete. Ready for changes');
         this.emit('ready', this.name);
     }
@@ -297,7 +382,7 @@ export class DirsWatcher extends EventEmitter {
         if (this[_symb_watcher]) return this[_symb_watcher].getWatched();
     }
 
-    vpathForFSPath(fspath) {
+    vpathForFSPath(fspath: string): VPathData {
         for (let dir of this.dirs) {
 
             // Check to see if we're supposed to ignore the file
@@ -330,7 +415,7 @@ export class DirsWatcher extends EventEmitter {
                         ? pathInMounted
                         : path.join(dir.mountPoint, pathInMounted);
                 // console.log(`vpathForFSPath fspath ${fspath} dir.mountPoint ${dir.mountPoint} pathInMounted ${pathInMounted} vpath ${vpath}`);
-                return {
+                let ret = <VPathData>{
                     fspath: fspath,
                     vpath: vpath,
                     mime: mime.getType(fspath),
@@ -338,14 +423,18 @@ export class DirsWatcher extends EventEmitter {
                     mountPoint: dir.mountPoint,
                     pathInMounted
                 };
+                if (!isVPathData(ret)) {
+                    throw new Error(`Invalid VPathData ${util.inspect(ret)}`);
+                }
+                return ret;
             }
         }
         // No directory found for this file
         return undefined;
     }
 
-    async stackForVPath(vpath) {
-        const ret = [];
+    async stackForVPath(vpath: string): Promise<VPathData[]> {
+        const ret: VPathData[] = [];
         for (let dir of this.dirs) {
             if (dir.mountPoint === '/') {
                 let pathInMounted = vpath;
@@ -357,14 +446,18 @@ export class DirsWatcher extends EventEmitter {
                     stats = undefined;
                 }
                 if (!stats) continue;
-                ret.push({
+                let topush = <VPathData>{
                     fspath: fspath,
                     vpath: vpath,
                     mime: mime.getType(fspath),
                     mounted: dir.mounted,
                     mountPoint: dir.mountPoint,
                     pathInMounted: pathInMounted
-                });
+                };
+                if (!isVPathData(topush)) {
+                    throw new Error(`Invalid VPathData ${util.inspect(topush)}`);
+                }
+                ret.push(topush);
             } else {
                 let dirmountpt = (dir.mountPoint.charAt(dir.mountPoint.length - 1) == '/')
                             ? dir.mountPoint
@@ -389,19 +482,25 @@ export class DirsWatcher extends EventEmitter {
                         // console.log(`stackForVPath vpath ${vpath} did not find fs.stats for ${fspath}`);
                         continue;
                     }
-                    ret.push({
+                    let topush = <VPathData>{
                         fspath: fspath,
                         vpath: vpath,
                         mime: mime.getType(fspath),
                         mounted: dir.mounted,
                         mountPoint: dir.mountPoint,
                         pathInMounted: pathInMounted
-                    });
+                    };
+                    if (!isVPathData(topush)) {
+                        throw new Error(`Invalid VPathData ${util.inspect(topush)}`);
+                    }
+                    ret.push(topush);
                 } else {
                     // console.log(`stackForVPath vpath ${vpath} did not match ${dirmountpt}`);
                 }
             }
         }
+        // (knock on wood) Every entry in `ret` has already been verified
+        // as being a correct VPathData object
         return ret;
     }
 
