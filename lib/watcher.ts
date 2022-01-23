@@ -27,7 +27,9 @@ import type { queueAsPromised } from "fastq";
 // per: https://asciidoctor.org/docs/faq/
 // per: https://github.com/asciidoctor/asciidoctor/issues/2502
 // mime.define({'text/x-asciidoc': ['adoc', 'asciidoc']});
-
+//
+// Instead of defining MIME types here, we added a method "mimedefine"
+// to allow DirsWatcher users to define MIME types.
 
 export class VPathData {
     fspath: string;
