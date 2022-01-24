@@ -261,7 +261,7 @@ export class DirsWatcher extends EventEmitter {
             console.log(`onChange could not find mount point or vpath for ${fpath}`);
             return;
         }
-        let stack = await this.stackForVPath(vpinfo.vpath);
+        let stack: VPathData[] = await this.stackForVPath(vpinfo.vpath);
         if (stack.length === 0) {
             throw new Error(`onChange could not find mount points for ${fpath}`);
         }
@@ -298,7 +298,7 @@ export class DirsWatcher extends EventEmitter {
         }
         // console.log(`onAdd ${fpath}`, vpinfo);
         // console.log(`onAdd ${fpath} ${vpinfo.vpath}`);
-        let stack = await this.stackForVPath(vpinfo.vpath);
+        let stack: VPathData[] = await this.stackForVPath(vpinfo.vpath);
         if (stack.length === 0) {
             throw new Error(`onAdd could not find mount points for ${fpath}`);
         }
@@ -354,7 +354,7 @@ export class DirsWatcher extends EventEmitter {
              * a change event.
              */
             let sfirst = stack[0];
-            this.emit('change', this.name, <VPathData>{
+            let toemit = <VPathData>{
                 fspath: sfirst.fspath,
                 vpath: sfirst.vpath,
                 mime: mime.getType(sfirst.fspath),
@@ -362,7 +362,11 @@ export class DirsWatcher extends EventEmitter {
                 mountPoint: sfirst.mountPoint,
                 pathInMounted: sfirst.pathInMounted,
                 stack
-            });
+            };
+            if (!isVPathData(toemit)) {
+                throw new Error(`Invalid VPathData ${util.inspect(toemit)}`);
+            }
+            this.emit('change', this.name, toemit);
         }
         // let info = this.fileInfo(fpath, undefined);
         // console.log(`DirsWatcher unlink ${fpath}`);
