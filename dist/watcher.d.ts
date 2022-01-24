@@ -1,10 +1,11 @@
 /// <reference types="node" />
 import { Stats } from 'fs';
 import { EventEmitter } from 'events';
+export declare function mimedefine(mapping: any, force?: boolean): void;
 export declare class VPathData {
     fspath: string;
     vpath: string;
-    mime: string;
+    mime?: string;
     mounted: string;
     mountPoint: string;
     pathInMounted: string;
@@ -23,7 +24,6 @@ export declare class DirsWatcher extends EventEmitter {
      * you specify to watch must be relative to the given directory.
      */
     set basedir(cwd: any);
-    mimedefine(mapping: any): void;
     /**
      * Creates the Chokidar watcher, basec on the directories to watch.  The <em>dirspec</em> option can be a string,
      * or an object.  If it is a string, it is a filesystem pathname that will be

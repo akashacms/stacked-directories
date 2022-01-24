@@ -9,5 +9,6 @@ In such a case, the mime package loaded correctly and used with no problem */
 
 export {
     VPathData,
-    DirsWatcher
+    DirsWatcher,
+    mimedefine
 } from '../dist/watcher.js';

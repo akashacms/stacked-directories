@@ -31,10 +31,15 @@ import type { queueAsPromised } from "fastq";
 // Instead of defining MIME types here, we added a method "mimedefine"
 // to allow DirsWatcher users to define MIME types.
 
+export function mimedefine(mapping, force ?: boolean) {
+    mime.define(mapping, force);
+}
+
+
 export class VPathData {
     fspath: string;
     vpath: string;
-    mime: string;
+    mime ?: string;
     mounted: string;
     mountPoint: string;
     pathInMounted: string;
@@ -44,9 +49,12 @@ export class VPathData {
 const isVPathData = (vpinfo): vpinfo is VPathData => {
     if (typeof vpinfo === 'undefined') return false;
     if (typeof vpinfo !== 'object') return false;
+    if (typeof vpinfo.mime !== 'undefined'
+     && typeof vpinfo.mime !== 'string') {
+        return false;
+    }
     if (typeof vpinfo.fspath !== 'string'
      || typeof vpinfo.vpath !== 'string'
-     || typeof vpinfo.mime !== 'string'
      || typeof vpinfo.mounted !== 'string'
      || typeof vpinfo.mountPoint !== 'string'
      || typeof vpinfo.pathInMounted !== 'string') {
@@ -142,10 +150,6 @@ export class DirsWatcher extends EventEmitter {
      * you specify to watch must be relative to the given directory.
      */
     set basedir(cwd) { this[_symb_cwd] = cwd; }
-
-    mimedefine(mapping) {
-        mime.define(mapping);
-    }
 
     /**
      * Creates the Chokidar watcher, basec on the directories to watch.  The <em>dirspec</em> option can be a string,

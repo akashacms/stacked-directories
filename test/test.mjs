@@ -3,7 +3,7 @@ import util from 'util';
 import { promises as fs } from 'fs';
 import Chai from 'chai';
 const assert = Chai.assert;
-import { DirsWatcher } from '../esm/watcher.mjs';
+import { DirsWatcher, mimedefine } from '../esm/watcher.mjs';
 
 /* import * as Watcher from '../dist/watcher.js';
 
@@ -19,11 +19,11 @@ const DirsWatcher = Watcher.DirsWatcher; */
 
 function mimeDefines(watcher) {
 
-    watcher.mimedefine({'text/x-asciidoc': [ 'adoc', 'asciidoc' ]});
-    watcher.mimedefine({'text/x-ejs': [ 'ejs']});
-    watcher.mimedefine({'text/x-nunjucks': [ 'njk' ]});
-    watcher.mimedefine({'text/x-handlebars': [ 'handlebars' ]});
-    watcher.mimedefine({'text/x-liquid': [ 'liquid' ]});
+    mimedefine({'text/x-asciidoc': [ 'adoc', 'asciidoc' ]});
+    mimedefine({'text/x-ejs': [ 'ejs']});
+    mimedefine({'text/x-nunjucks': [ 'njk' ]});
+    mimedefine({'text/x-handlebars': [ 'handlebars' ]});
+    mimedefine({'text/x-liquid': [ 'liquid' ]});
 
 }
 
