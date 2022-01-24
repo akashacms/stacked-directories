@@ -1,0 +1,19 @@
+{
+    "include": ["lib/**/*"],
+    "compilerOptions": {
+        "lib": [ "es6", "es2021", "esnext" ],
+        "target": "es2021",
+        "module": "commonjs",
+        "moduleResolution": "Node",
+        "outDir": "./dist",
+        "rootDir": "./lib",
+        "allowJs": true,
+        "esModuleInterop": true,
+        "declaration": true,
+        "declarationMap": true,
+        "inlineSourceMap": true,
+        "inlineSources": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+    }
+}

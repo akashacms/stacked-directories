@@ -3,8 +3,29 @@ import util from 'util';
 import { promises as fs } from 'fs';
 import Chai from 'chai';
 const assert = Chai.assert;
-import { DirsWatcher } from '../lib/watcher.mjs';
+import { DirsWatcher, mimedefine } from '../esm/watcher.mjs';
 
+/* import * as Watcher from '../dist/watcher.js';
+
+console.log(Watcher);
+const DirsWatcher = Watcher.DirsWatcher; */
+
+// This function sets up definitions for file extensions
+// that are not recognized by default by the MIME package.
+// These file extensions are used in the test suite, and in AkashaCMS.
+// This function should only be called once.
+//
+// This function also handles testing of the mimedefine function.
+
+function mimeDefines(watcher) {
+
+    mimedefine({'text/x-asciidoc': [ 'adoc', 'asciidoc' ]});
+    mimedefine({'text/x-ejs': [ 'ejs']});
+    mimedefine({'text/x-nunjucks': [ 'njk' ]});
+    mimedefine({'text/x-handlebars': [ 'handlebars' ]});
+    mimedefine({'text/x-liquid': [ 'liquid' ]});
+
+}
 
 describe('Documents simple', function() {
 
@@ -17,6 +38,7 @@ describe('Documents simple', function() {
     it('should set up simple documents watcher', async function() {
         try {
             watcher = new DirsWatcher(name);
+            mimeDefines(watcher);
             watcher.on('change', (name, info) => {
                 // console.log(`watcher on 'change' for ${info.vpath}`);
                 events.push({
@@ -42,7 +64,7 @@ describe('Documents simple', function() {
                 watcher.on('ready', () => {
                     resolve(true);
                 });
-            })
+            });
             await watcher.watch([
                 { mounted: 'documents-example',      mountPoint: '/' }
             ]);
@@ -63,9 +85,8 @@ describe('Documents simple', function() {
         }
     });
     
-
     it('should find feeds-tags', async function() {
-        // console.log(events);
+        // console.log(`feeds-tags `, events);
         let found;
         for (let event of events) {
             if (event.event === 'add' && event.info.vpath === 'feeds-tags.html.md') {
@@ -268,6 +289,7 @@ describe('Overlaid directories', function() {
         this.timeout(25000);
         try {
             watcher = new DirsWatcher(name);
+            // mimeDefines(watcher);
             
             watcher.on('change', (name, info) => {
                 // console.log(`watcher on 'change' for ${info.vpath}`);
@@ -476,6 +498,7 @@ describe('Documents dual with mounted', function() {
         this.timeout(25000);
         try {
             watcher = new DirsWatcher(name);
+            // mimeDefines(watcher);
 
             watcher.on('change', (name, info) => {
                 // console.log(`watcher on 'change' for ${info.vpath}`);
@@ -616,6 +639,7 @@ describe('Documents dual with mounted with ignored files', function() {
         this.timeout(25000);
         try {
             watcher = new DirsWatcher(name);
+            // mimeDefines(watcher);
             
             watcher.on('change', (name, info) => {
                 // console.log(`watcher on 'change' for ${info.vpath}`);
@@ -819,6 +843,7 @@ describe('Add event post-Ready', function() {
         this.timeout(25000);
         try {
             watcher = new DirsWatcher(name);
+            // mimeDefines(watcher);
 
             watcher.on('change', (name, info) => {
                 // console.log(`watcher on 'change' for ${info.vpath}`);
@@ -1104,6 +1129,7 @@ describe('Change and Unlink events post-Ready', function() {
         this.timeout(25000);
         try {
             watcher = new DirsWatcher(name);
+            // mimeDefines(watcher);
 
             watcher.on('change', (name, info) => {
                 // console.log(`watcher on 'change' for ${info.vpath}`);

@@ -4,8 +4,17 @@
   "description": "Automatically watch for changes in stacked directories",
   "bugs": "https://github.com/akashacms/stacked-directories/issues",
   "homepage": "https://akashacms.github.io/stacked-directories/",
-  "main": "lib/watcher.mjs",
+  "main": "./dist/watcher.js",
+  "exports": {
+    "require": "./dist/watcher.js",
+    "import": "./esm/watcher.mjs"
+  },
+  "types": "./dist/watcher.d.ts",
+  "type": "commonjs",
   "scripts": {
+    "build": "npx tsc",
+    "watch": "tsc --watch",
+    "monitor": "nodemon --watch dist --watch test --exec 'cd test && npm run test'",
     "dopublish": "npm publish --access public"
   },
   "keywords": [
@@ -20,9 +29,16 @@
   "author": "David Herron <david@davidherron.com>",
   "license": "ISC",
   "dependencies": {
-    "chokidar": "^3.4.2",
-    "fastq": "^1.11.1",
-    "mime": "^2.4.6",
-    "minimatch": "^3.0.4"
+    "chokidar": "^3.5.x",
+    "fastq": "^1.13.x",
+    "mime": "^3.x",
+    "minimatch": "^3.x"
+  },
+  "devDependencies": {
+    "@types/mime": "^2.0.3",
+    "@types/minimatch": "^3.0.5",
+    "@types/node": "^17.0.10",
+    "nodemon": "^2.0.15",
+    "typescript": "^4.5.5"
   }
 }

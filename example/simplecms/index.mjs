@@ -1,6 +1,6 @@
 
 // import { DirsWatcher } from '@akashacms/stacked-dirs';
-import { DirsWatcher } from '../../lib/watcher.mjs';
+import { DirsWatcher } from '../../lib/watcher.js';
 import path from 'path';
 import { promises as fs } from 'fs';
 import { render, renderedPath } from './render.mjs';
