@@ -50,6 +50,7 @@ const isVPathData = (vpinfo): vpinfo is VPathData => {
     if (typeof vpinfo === 'undefined') return false;
     if (typeof vpinfo !== 'object') return false;
     if (typeof vpinfo.mime !== 'undefined'
+     && vpinfo.mime !== null
      && typeof vpinfo.mime !== 'string') {
         return false;
     }
