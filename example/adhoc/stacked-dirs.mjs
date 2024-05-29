@@ -55,11 +55,12 @@ const dirs = [
 });
 
 const start = new Date();
+let count = 0;
 
 try {
-const docsWatcher = new DirsWatcher('documents');
+let docsWatcher = new DirsWatcher('documents');
 
-const waitClose = new Promise((resolve, reject) => {
+await new Promise((resolve, reject) => {
 
     try {
         docsWatcher.on('ready', async (name) => {
@@ -68,26 +69,26 @@ const waitClose = new Promise((resolve, reject) => {
         })
         /* .on('change', async (name, info) => {
             console.log(`documents change ${name} ${info.vpath}`, info);
-        })
+        }) */
         .on('add', async (name, info) => {
-            console.log(`documents add ${name} ${info.vpath}`, info);
-        }) */;
+            // console.log(`documents add ${name} ${info.vpath}`, info);
+            count++;
+        });
         
         docsWatcher.watch(dirs);
             
         async function close() {
             await docsWatcher.close();
+            docsWatcher = undefined;
 
             const finish = new Date();
 
-            console.log(`time ${(finish - start) / 1000} seconds`);
+            console.log(`time ${(finish - start) / 1000} seconds - ${count} files`);
             resolve();
         }
     } catch(errr) { reject(errr); }
 
 });
-
-await waitClose;
 
 } catch (err) {
     console.error(err);
