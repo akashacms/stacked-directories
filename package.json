@@ -1,6 +1,6 @@
 {
   "name": "@akashacms/stacked-dirs",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "Automatically watch for changes in stacked directories",
   "bugs": "https://github.com/akashacms/stacked-directories/issues",
   "homepage": "https://akashacms.github.io/stacked-directories/",

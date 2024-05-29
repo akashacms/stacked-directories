@@ -1,22 +1,63 @@
 /// <reference types="node" />
-import { Stats } from 'fs';
 import { EventEmitter } from 'events';
 export declare function mimedefine(mapping: any, force?: boolean): void;
 export declare class VPathData {
+    /**
+     * The full file-system path for the file.
+     * e.g. /home/path/to/article-name.html.md
+     */
     fspath: string;
+    /**
+     * The virtual path, rooted at the top
+     * directory of the filesystem, with no
+     * leading slash.
+     */
     vpath: string;
+    /**
+     * The mime type of the file.  The mime types
+     * are determined from the file extension
+     * using the 'mime' package.
+     */
     mime?: string;
+    /**
+     * The file-system path which is mounted
+     * into the virtual file space.
+     */
     mounted: string;
+    /**
+     * The virtual directory of the mount
+     * entry in the directory stack.
+     */
     mountPoint: string;
+    /**
+     * The relative path underneath the mountPoint.
+     */
     pathInMounted: string;
+    /**
+     * The file-system stack related to the file.
+     */
     stack?: VPathData[];
 }
+/**
+ * Typeguard function ensuring that an object
+ * is a VPathData object.
+ * @param vpinfo The object to check
+ * @returns true if it is a VPathData, false otherwise
+ */
+export declare const isVPathData: (vpinfo: any) => vpinfo is VPathData;
 export declare class DirsWatcher extends EventEmitter {
     /**
      * @param name string giving the name for this watcher
      */
     constructor(name: any);
+    /**
+     * Retrieves the directory stack for
+     * this Watcher.
+     */
     get dirs(): any;
+    /**
+     * Retrieves the name for this Watcher
+     */
     get name(): any;
     /**
      * Changes the use of absolute pathnames, to paths relatve to the given directory.
@@ -43,8 +84,8 @@ export declare class DirsWatcher extends EventEmitter {
      * @param dirspec
      */
     watch(dirs: any): Promise<void>;
-    onChange(fpath: string, stats: Stats): Promise<void>;
-    onAdd(fpath: string, stats: Stats): Promise<void>;
+    onChange(fpath: string): Promise<void>;
+    onAdd(fpath: string): Promise<void>;
     onUnlink(fpath: string): Promise<void>;
     onReady(): void;
     /**
