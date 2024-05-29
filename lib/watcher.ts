@@ -37,16 +37,57 @@ export function mimedefine(mapping, force ?: boolean) {
 
 
 export class VPathData {
+
+    /**
+     * The full file-system path for the file.
+     * e.g. /home/path/to/article-name.html.md
+     */
     fspath: string;
+
+    /**
+     * The virtual path, rooted at the top
+     * directory of the filesystem, with no
+     * leading slash.
+     */
     vpath: string;
+
+    /**
+     * The mime type of the file.  The mime types
+     * are determined from the file extension
+     * using the 'mime' package.
+     */
     mime ?: string;
+
+    /**
+     * The file-system path which is mounted
+     * into the virtual file space.
+     */
     mounted: string;
+
+    /**
+     * The virtual directory of the mount
+     * entry in the directory stack.
+     */
     mountPoint: string;
+
+    /**
+     * The relative path underneath the mountPoint.
+     */
     pathInMounted: string;
+
+    /**
+     * The file-system stack related to the file.
+     */
     stack ?: VPathData[];
 }
 
-const isVPathData = (vpinfo): vpinfo is VPathData => {
+/**
+ * Typeguard function ensuring that an object
+ * is a VPathData object.
+ * @param vpinfo The object to check
+ * @returns true if it is a VPathData, false otherwise
+ */
+export const isVPathData = (vpinfo): vpinfo is VPathData => {
     if (typeof vpinfo === 'undefined') return false;
     if (typeof vpinfo !== 'object') return false;
     if (typeof vpinfo.mime !== 'undefined'
@@ -142,7 +183,15 @@ export class DirsWatcher extends EventEmitter {
         });
     }
 
+    /**
+     * Retrieves the directory stack for
+     * this Watcher.
+     */
     get dirs() { return this[_symb_dirs]; }
+
+    /**
+     * Retrieves the name for this Watcher
+     */
     get name() { return this[_symb_name]; }
 
     /**
@@ -287,6 +336,9 @@ export class DirsWatcher extends EventEmitter {
         if (depth === 0) {
             vpinfo.stack = stack;
             // console.log(`DirsWatcher change ${fpath}`);
+            if (!isVPathData(vpinfo)) {
+                throw new Error(`Invalid VPathData ${util.inspect(vpinfo)}`);
+            }
             this.emit('change', this.name, vpinfo);
         }
         // let info = this.fileInfo(fpath, stats);
@@ -329,6 +381,9 @@ export class DirsWatcher extends EventEmitter {
             // for (let s of stack) {
             //    console.log(`.... ${s.vpath} ==> ${s.fspath}`);
             // }
+            if (!isVPathData(vpinfo)) {
+                throw new Error(`Invalid VPathData ${util.inspect(vpinfo)}`);
+            }
             this.emit('add', this.name, vpinfo);
         } else {
             // console.log(`onAdd SKIPPED emit event for ${fpath}`);
@@ -352,6 +407,9 @@ export class DirsWatcher extends EventEmitter {
             /* If no files remain in the stack for this virtual path, then
              * we must declare it unlinked.
              */
+            if (!isVPathData(vpinfo)) {
+                throw new Error(`Invalid VPathData ${util.inspect(vpinfo)}`);
+            }
             this.emit('unlink', this.name, vpinfo);
         } else {
             /* On the other hand, if there is an entry we shouldn't send
@@ -417,10 +475,13 @@ export class DirsWatcher extends EventEmitter {
             // match dir.mounted "/path/to/layouts".
             //
             // console.log(`vpathForFSPath ${dir.mounted} ${typeof dir.mounted}`, dir);
-            const dirmounted = (dir.mounted.charAt(dir.mounted.length - 1) == '/')
+            const dirmounted =
+                (dir && dir.mounted)
+                    ? (dir.mounted.charAt(dir.mounted.length - 1) == '/')
                         ? dir.mounted
-                        : (dir.mounted + '/');
-            if (fspath.indexOf(dirmounted) === 0) {
+                        : (dir.mounted + '/')
+                    : undefined;
+            if (dirmounted && fspath.indexOf(dirmounted) === 0) {
                 const pathInMounted = fspath.substring(dir.mounted.length).substring(1);
                 const vpath = dir.mountPoint === '/'
                         ? pathInMounted
@@ -470,11 +531,14 @@ export class DirsWatcher extends EventEmitter {
                 }
                 ret.push(topush);
             } else {
-                const dirmountpt = (dir.mountPoint.charAt(dir.mountPoint.length - 1) == '/')
+                const dirmountpt =
+                    (dir && dir.mountPoint)
+                        ? (dir.mountPoint.charAt(dir.mountPoint.length - 1) === '/')
                             ? dir.mountPoint
-                            : (dir.mountPoint + '/');
+                            : (dir.mountPoint + '/')
+                        : undefined;
                 // console.log(`stackForVPath vpath ${vpath} dir.mounted ${dir.mountPoint} dirmountpt ${dirmountpt}`);
-                if (vpath.indexOf(dirmountpt) === 0) {
+                if (dirmountpt && vpath.indexOf(dirmountpt) === 0) {
                     // > const vpath = 'foo/bar/baz.html';
                     // > const m = 'foo/bar';
                     // > let pathInMounted = vpath.substring(m.length + 1);
@@ -575,7 +639,12 @@ export class DirsWatcher extends EventEmitter {
     } */
 
     async close() {
+        this.removeAllListeners('change');
+        this.removeAllListeners('add');
+        this.removeAllListeners('unlink');
+        this.removeAllListeners('ready');
         if (this[_symb_watcher]) {
+            // console.log(`Closing watcher ${this.name}`);
             await this[_symb_watcher].close();
             this[_symb_watcher] = undefined;
         }
