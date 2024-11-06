@@ -2,19 +2,19 @@
 import {
     promises as fs,
     Stats
-} from 'fs';
-import { default as chokidar } from 'chokidar';
-import * as mime from 'mime';
-/* const mime = { 
-    getType: mime_pkg.getType,
-    getExtension: mime_pkg.getExtension,
-    define: mime_pkg.define
-}; */
-// import { getType, getExtension, define as mime_define } from 'mime';
-import * as util from 'util';
-import * as path from 'path';
-import { EventEmitter } from 'events';
-import minimatch from 'minimatch';
+} from 'node:fs';
+import chokidar, { FSWatcher, ChokidarOptions } from 'chokidar';
+
+import { Mime } from 'mime/lite';
+import standardTypes from 'mime/types/standard.js';
+import otherTypes from 'mime/types/other.js';
+
+const mime = new Mime(standardTypes, otherTypes);
+
+import * as util from 'node:util';
+import * as path from 'node:path';
+import { EventEmitter } from 'node:events';
+import { minimatch } from 'minimatch';
 import * as fastq from 'fastq';
 import type { queueAsPromised } from "fastq";
 
@@ -36,7 +36,7 @@ export function mimedefine(mapping, force ?: boolean) {
 }
 
 
-export class VPathData {
+export type VPathData = {
 
     /**
      * The full file-system path for the file.
@@ -138,27 +138,79 @@ const isQueueEvent = (event): event is queueEvent => {
     return false;
 }
 
-const _symb_dirs = Symbol('dirs');
-const _symb_watcher = Symbol('watcher');
-const _symb_name = Symbol('name');
-const _symb_options = Symbol('options');
-const _symb_cwd = Symbol('basedir');
-const _symb_queue = Symbol('queue');
+export type dirToWatch = {
+    /**
+     * The filesystem path to "mount".
+     */
+    mounted: string;
+
+    /**
+     * The path within the virtual filesystem where this will appear.
+     */
+    mountPoint: string;
+
+    /**
+     * Optional array of strings containing globs for matching
+     * files to ignore.
+     */
+    ignore?: string[];
+}
+
+/**
+ * Determine whether the {@code dir} is a {@code dirToWatch}.
+ */
+export const isDirToWatch = (dir: any): dir is dirToWatch => {
+    if (typeof dir === 'undefined') return false;
+    if (typeof dir !== 'object') return false;
+
+    if ('mounted' in dir && typeof dir.mounted !== 'string') return false;
+    if ('mountPoint' in dir && typeof dir.mountPoint !== 'string') return;
+    if ('ignore' in dir) {
+        if (
+         typeof dir.ignore !== 'string'
+         && !Array.isArray(dir.ignore)
+        ) {
+            return false;
+        }
+        if (
+            typeof dir.ignore === 'string'
+         && Array.isArray(dir.ignore)
+        ) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// const _symb_dirs = Symbol('dirs');
+// const _symb_watcher = Symbol('watcher');
+// const _symb_name = Symbol('name');
+// const _symb_options = Symbol('options');
+// const _symb_cwd = Symbol('basedir');
+// const _symb_queue = Symbol('queue');
 
 export class DirsWatcher extends EventEmitter {
+
+    #dirs: dirToWatch[];
+    #watcher?: FSWatcher;
+    #name: string;
+    #options: ChokidarOptions;
+    #basedir;
+    #queue;
 
     /**
      * @param name string giving the name for this watcher
      */
-    constructor(name) {
+    constructor(name: string) {
         super();
         // console.log(`DirsWatcher ${name} constructor`);
-        this[_symb_name] = name;
+        this.#name = name;
         // TODO is there a need to make this customizable?
-        this[_symb_options] = {
+        this.#options = {
             persistent: true, ignoreInitial: false, awaitWriteFinish: true, alwaysStat: true
         };
-        this[_symb_cwd] = undefined;
+        this.#basedir = undefined;
         const that = this;
         const q: queueAsPromised<queueEvent> = fastq.promise(
             async function(event: queueEvent) {
@@ -175,8 +227,8 @@ export class DirsWatcher extends EventEmitter {
                     await that.onReady();
                 }
             }, 1);
-        this[_symb_queue] = q;
-        this[_symb_queue].error(function(err, task) {
+        this.#queue = q;
+        this.#queue.error(function(err, task) {
             if (err) {
                 console.error(`DirsWatcher ${name} ${task.code} ${task.fpath} caught error ${err}`);
             }
@@ -187,19 +239,19 @@ export class DirsWatcher extends EventEmitter {
      * Retrieves the directory stack for
      * this Watcher.
      */
-    get dirs() { return this[_symb_dirs]; }
+    get dirs(): dirToWatch[] | undefined { return this.#dirs; }
 
     /**
      * Retrieves the name for this Watcher
      */
-    get name() { return this[_symb_name]; }
+    get name() { return this.#name; }
 
     /**
      * Changes the use of absolute pathnames, to paths relatve to the given directory.
      * This must be called before the <em>watch</em> method is called.  The paths
      * you specify to watch must be relative to the given directory.
      */
-    set basedir(cwd) { this[_symb_cwd] = cwd; }
+    set basedir(cwd) { this.#basedir = cwd; }
 
     /**
      * Creates the Chokidar watcher, basec on the directories to watch.  The <em>dirspec</em> option can be a string,
@@ -219,15 +271,18 @@ export class DirsWatcher extends EventEmitter {
      * 
      * @param dirspec 
      */
-    async watch(dirs) {
-        if (this[_symb_watcher]) {
-            throw new Error(`Watcher already started for ${this[_symb_watcher]}`);
+    async watch(dirs: dirToWatch[] | string) {
+        if (this.#watcher) {
+            throw new Error(`Watcher already started for ${this.#watcher}`);
         }
         if (typeof dirs === 'string') {
             dirs = [ {
-                src: dirs, dest: '/'
+                mounted: dirs, mountPoint: '/'
             } ];
         } else if (typeof dirs === 'object' && !Array.isArray(dirs)) {
+            if (!isDirToWatch(dirs)) {
+                throw new Error(`watch - directory spec not a dirToWatch - ${util.inspect(dirs)}`);
+            }
             dirs = [ dirs ];
         } else if (!Array.isArray(dirs)) {
             throw new Error(`watch - the dirs argument is incorrect ${util.inspect(dirs)}`);
@@ -235,21 +290,24 @@ export class DirsWatcher extends EventEmitter {
         // console.log(`watch dirs=`, dirs);
         const towatch = [];
         for (const dir of dirs) {
+            if (!isDirToWatch(dir)) {
+                throw new Error(`watch directory spec in dirs not a dirToWatch - ${util.inspect(dir)}`);
+            }
             const stats = await fs.stat(dir.mounted);
             if (!stats.isDirectory()) {
                 throw new Error(`watch - non-directory specified in ${util.inspect(dir)}`);
             }
             towatch.push(dir.mounted);
         }
-        this[_symb_dirs] = dirs;
+        this.#dirs = dirs;
 
-        if (this[_symb_cwd]) {
-            this[_symb_options].cwd = this[_symb_cwd];
+        if (this.#basedir) {
+            this.#options.cwd = this.#basedir;
         } else {
-            this[_symb_options].cwd = undefined;
+            this.#options.cwd = undefined;
         }
 
-        this[_symb_watcher] = chokidar.watch(towatch, this[_symb_options]);
+        this.#watcher = chokidar.watch(towatch, this.#options);
 
         // In the event handlers, we create the FileInfo object matching
         // the path.  The FileInfo is matched to a _symb_dirs entry.
@@ -264,15 +322,15 @@ export class DirsWatcher extends EventEmitter {
 
         // const watcher_name = this.name;
 
-        this[_symb_watcher]
+        this.#watcher
             .on('change', async (fpath, stats) => {
-                this[_symb_queue].push(<queueEvent>{
+                this.#queue.push(<queueEvent>{
                     code: 'change', fpath, stats
                 });
                 // console.log(`watcher ${watcher_name} change ${fpath}`);
             })
             .on('add', async (fpath, stats) => {
-                this[_symb_queue].push(<queueEvent>{
+                this.#queue.push(<queueEvent>{
                     code: 'add', fpath, stats
                 });
                 // console.log(`watcher ${watcher_name} add ${fpath}`);
@@ -283,7 +341,7 @@ export class DirsWatcher extends EventEmitter {
                 // ?? this.emit('addDir', info);
             }) */
             .on('unlink', async fpath => {
-                this[_symb_queue].push(<queueEvent>{
+                this.#queue.push(<queueEvent>{
                     code: 'unlink', fpath
                 });
                 // console.log(`watcher ${watcher_name} unlink ${fpath}`);
@@ -294,7 +352,7 @@ export class DirsWatcher extends EventEmitter {
                 // ?? this.emit('unlinkDir', info);
             }) */
             .on('ready', () => {
-                this[_symb_queue].push(<queueEvent>{
+                this.#queue.push(<queueEvent>{
                     code: 'ready'
                 });
                 // console.log(`watcher ${watcher_name} ready`);
@@ -448,7 +506,7 @@ export class DirsWatcher extends EventEmitter {
      * and the values are arrays of the names of the items contained in each directory.
      */
     getWatched() {
-        if (this[_symb_watcher]) return this[_symb_watcher].getWatched();
+        if (this.#watcher) return this.#watcher.getWatched();
     }
 
     vpathForFSPath(fspath: string): VPathData {
@@ -579,74 +637,15 @@ export class DirsWatcher extends EventEmitter {
         return ret;
     }
 
-    /**
-     * Convert data we gather about a file in the file system into a descriptor object.
-     * @param fspath 
-     * @param stats 
-     */
-    /* fileInfo(fspath, stats) {
-        let e = this.dirForPath(fspath);
-        if (!e) {
-            throw new Error(`No mountPoint found for ${fspath}`);
-        }
-        let fnInSourceDir = fspath.substring(e.path.length).substring(1);
-        let docpath = path.join(e.mountPoint, fnInSourceDir);
-        if (docpath.startsWith('/')) {
-            docpath = docpath.substring(1);
-        }
-        let ignore = false;
-        let include = true;
-        if (e.ignore) {
-            let ignores;
-            if (typeof e.ignore === 'string') {
-                ignores = [ e.ignore ];
-            } else {
-                ignores = e.ignore;
-            }
-            for (let i of ignores) {
-                if (minimatch(fnInSourceDir, i)) ignore = true;
-                // console.log(`e.ignore ${fnInSourceDir} ${i} => ${ignore}`);
-            }
-        }
-        if (e.include) {
-            include = false;
-            let includers;
-            if (typeof e.include === 'string') {
-                includers = [ e.include ];
-            } else {
-                includers = e.include;
-            }
-            for (let i of includers) {
-                if (minimatch(fnInSourceDir, i)) include = true;
-                // console.log(`e.include ${fnInSourceDir} ${i} => ${include}`);
-            }
-        }
-        if (ignore || !include) {
-            return undefined;
-        } else {
-            return {
-                fspath: fspath,
-                mime: mime.getType(fspath),
-                baseMetadata: e.baseMetadata,
-                sourcePath: e.path,
-                mountPoint: e.mountPoint,
-                pathInSource: fnInSourceDir,
-                path: docpath,
-                isDirectory: stats.isDirectory(),
-                stats
-            };
-        }
-    } */
-
     async close() {
         this.removeAllListeners('change');
         this.removeAllListeners('add');
         this.removeAllListeners('unlink');
         this.removeAllListeners('ready');
-        if (this[_symb_watcher]) {
+        if (this.#watcher) {
             // console.log(`Closing watcher ${this.name}`);
-            await this[_symb_watcher].close();
-            this[_symb_watcher] = undefined;
+            await this.#watcher.close();
+            this.#watcher = undefined;
         }
     }
 }

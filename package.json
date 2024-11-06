@@ -10,7 +10,7 @@
     "import": "./esm/watcher.mjs"
   },
   "types": "./dist/watcher.d.ts",
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
     "build": "npx tsc",
     "watch": "tsc --watch",
@@ -30,19 +30,15 @@
   "author": "David Herron <david@davidherron.com>",
   "license": "ISC",
   "dependencies": {
-    "chokidar": "^3.5.x",
-    "fastq": "^1.13.x",
-    "mime": "^3.x",
-    "minimatch": "^3.x"
+    "chokidar": "^4.0.x",
+    "fastq": "^1.17.x",
+    "mime": "^4.x",
+    "minimatch": "^10.x"
   },
   "devDependencies": {
-    "@types/mime": "^2.0.3",
-    "@types/minimatch": "^3.0.5",
-    "@types/node": "^17.0.10",
-    "@typescript-eslint/eslint-plugin": "^5.10.1",
-    "@typescript-eslint/parser": "^5.10.1",
-    "eslint": "^8.7.0",
-    "nodemon": "^2.0.15",
-    "typescript": "^4.5.5"
+    "@types/minimatch": "^5.x",
+    "@types/node": "^22.x",
+    "nodemon": "^3.1.x",
+    "typescript": "^5.6.x"
   }
 }

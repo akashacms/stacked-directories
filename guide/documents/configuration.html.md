@@ -52,9 +52,9 @@ watcher.on('unlink', (name, info) => {
     });
 });
 await watcher.watch([
-    { mounted: 'documents-main',  mountPoint: '/' },
-    { mounted: 'documents-guide', mountPoint: 'guide' },
-    { mounted: 'documents-blog',  mountPoint: 'blog' }
+    { mount: 'documents-main',  mountPoint: '/' },
+    { mount: 'documents-guide', mountPoint: 'guide' },
+    { mount: 'documents-blog',  mountPoint: 'blog' }
 ]);
 ```
 

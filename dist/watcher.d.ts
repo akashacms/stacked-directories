@@ -1,7 +1,6 @@
-/// <reference types="node" />
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
 export declare function mimedefine(mapping: any, force?: boolean): void;
-export declare class VPathData {
+export type VPathData = {
     /**
      * The full file-system path for the file.
      * e.g. /home/path/to/article-name.html.md
@@ -37,7 +36,7 @@ export declare class VPathData {
      * The file-system stack related to the file.
      */
     stack?: VPathData[];
-}
+};
 /**
  * Typeguard function ensuring that an object
  * is a VPathData object.
@@ -45,20 +44,40 @@ export declare class VPathData {
  * @returns true if it is a VPathData, false otherwise
  */
 export declare const isVPathData: (vpinfo: any) => vpinfo is VPathData;
+export type dirToWatch = {
+    /**
+     * The filesystem path to "mount".
+     */
+    mounted: string;
+    /**
+     * The path within the virtual filesystem where this will appear.
+     */
+    mountPoint: string;
+    /**
+     * Optional array of strings containing globs for matching
+     * files to ignore.
+     */
+    ignore?: string[];
+};
+/**
+ * Determine whether the {@code dir} is a {@code dirToWatch}.
+ */
+export declare const isDirToWatch: (dir: any) => dir is dirToWatch;
 export declare class DirsWatcher extends EventEmitter {
+    #private;
     /**
      * @param name string giving the name for this watcher
      */
-    constructor(name: any);
+    constructor(name: string);
     /**
      * Retrieves the directory stack for
      * this Watcher.
      */
-    get dirs(): any;
+    get dirs(): dirToWatch[] | undefined;
     /**
      * Retrieves the name for this Watcher
      */
-    get name(): any;
+    get name(): string;
     /**
      * Changes the use of absolute pathnames, to paths relatve to the given directory.
      * This must be called before the <em>watch</em> method is called.  The paths
@@ -83,7 +102,7 @@ export declare class DirsWatcher extends EventEmitter {
      *
      * @param dirspec
      */
-    watch(dirs: any): Promise<void>;
+    watch(dirs: dirToWatch[] | string): Promise<void>;
     onChange(fpath: string): Promise<void>;
     onAdd(fpath: string): Promise<void>;
     onUnlink(fpath: string): Promise<void>;
@@ -94,14 +113,9 @@ export declare class DirsWatcher extends EventEmitter {
      * directories (using absolute paths unless the cwd option was used),
      * and the values are arrays of the names of the items contained in each directory.
      */
-    getWatched(): any;
+    getWatched(): Record<string, string[]>;
     vpathForFSPath(fspath: string): VPathData;
     stackForVPath(vpath: string): Promise<VPathData[]>;
-    /**
-     * Convert data we gather about a file in the file system into a descriptor object.
-     * @param fspath
-     * @param stats
-     */
     close(): Promise<void>;
 }
 //# sourceMappingURL=watcher.d.ts.map
