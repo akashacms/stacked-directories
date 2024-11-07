@@ -35,7 +35,6 @@ export function mimedefine(mapping, force ?: boolean) {
     mime.define(mapping, force);
 }
 
-
 export type VPathData = {
 
     /**
@@ -164,10 +163,10 @@ export const isDirToWatch = (dir: any): dir is dirToWatch => {
     if (typeof dir !== 'object') return false;
 
     if ('mounted' in dir && typeof dir.mounted !== 'string') return false;
-    if ('mountPoint' in dir && typeof dir.mountPoint !== 'string') return;
-    if ('ignore' in dir) {
+    if ('mountPoint' in dir && typeof dir.mountPoint !== 'string') return false;
+    if ('ignore' in dir && typeof dir.ignore !== 'undefined') {
         if (
-         typeof dir.ignore !== 'string'
+            typeof dir.ignore !== 'string'
          && !Array.isArray(dir.ignore)
         ) {
             return false;
