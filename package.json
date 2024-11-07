@@ -5,10 +5,6 @@
   "bugs": "https://github.com/akashacms/stacked-directories/issues",
   "homepage": "https://akashacms.github.io/stacked-directories/",
   "main": "./dist/watcher.js",
-  "exports": {
-    "require": "./dist/watcher.js",
-    "import": "./esm/watcher.mjs"
-  },
   "types": "./dist/watcher.d.ts",
   "type": "module",
   "scripts": {
