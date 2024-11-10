@@ -1,6 +1,7 @@
 
 import {
     promises as fs,
+    statSync as fsStatSync,
     Stats
 } from 'node:fs';
 import chokidar, { FSWatcher, ChokidarOptions } from 'chokidar';
@@ -73,6 +74,11 @@ export type VPathData = {
      * The relative path underneath the mountPoint.
      */
     pathInMounted: string;
+
+    /**
+     * The mTime value from Stats
+     */
+    statsMtime: number;
 
     /**
      * The file-system stack related to the file.
@@ -217,9 +223,9 @@ export class DirsWatcher extends EventEmitter {
                     throw new Error(`INTERNAL ERROR not a queueEvent ${util.inspect(event)}`);
                 }
                 if (event.code === 'change') {
-                    await that.onChange(event.fpath /*, event.stats */);
+                    await that.onChange(event.fpath, event.stats);
                 } else if (event.code === 'add') {
-                    await that.onAdd(event.fpath /*, event.stats */);
+                    await that.onAdd(event.fpath, event.stats);
                 } else if (event.code === 'unlink') {
                     await that.onUnlink(event.fpath);
                 } else if (event.code === 'ready') {
@@ -366,8 +372,8 @@ export class DirsWatcher extends EventEmitter {
     /* Calculate the stack for a filesystem path
 
     Only emit if the change was to the front-most file */ 
-    async onChange(fpath: string): Promise<void> {
-        const vpinfo = this.vpathForFSPath(fpath);
+    async onChange(fpath: string, stats: Stats): Promise<void> {
+        const vpinfo = this.vpathForFSPath(fpath, stats);
         if (!vpinfo) {
             console.log(`onChange could not find mount point or vpath for ${fpath}`);
             return;
@@ -404,8 +410,8 @@ export class DirsWatcher extends EventEmitter {
     }
 
     // Only emit if the add was the front-most file
-    async onAdd(fpath: string): Promise<void> {
-        const vpinfo = this.vpathForFSPath(fpath);
+    async onAdd(fpath: string, stats: Stats): Promise<void> {
+        const vpinfo = this.vpathForFSPath(fpath, stats);
         if (!vpinfo) {
             console.log(`onAdd could not find mount point or vpath for ${fpath}`);
             return;
@@ -508,7 +514,7 @@ export class DirsWatcher extends EventEmitter {
         if (this.#watcher) return this.#watcher.getWatched();
     }
 
-    vpathForFSPath(fspath: string): VPathData {
+    vpathForFSPath(fspath: string, stats?: Stats): VPathData {
         for (const dir of this.dirs) {
 
             // Check to see if we're supposed to ignore the file
@@ -552,6 +558,15 @@ export class DirsWatcher extends EventEmitter {
                     mountPoint: dir.mountPoint,
                     pathInMounted
                 };
+                if (stats) {
+                    ret.statsMtime = stats.mtimeMs;
+                } else {
+                    // Use the sync version to
+                    // maintain this function
+                    // as non-async
+                    let stats = fsStatSync(ret.fspath);
+                    ret.statsMtime = stats.mtimeMs;
+                }
                 if (!isVPathData(ret)) {
                     throw new Error(`Invalid VPathData ${util.inspect(ret)}`);
                 }

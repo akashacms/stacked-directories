@@ -1,3 +1,4 @@
+import { Stats } from 'node:fs';
 import { EventEmitter } from 'node:events';
 export declare function mimedefine(mapping: any, force?: boolean): void;
 export type VPathData = {
@@ -32,6 +33,10 @@ export type VPathData = {
      * The relative path underneath the mountPoint.
      */
     pathInMounted: string;
+    /**
+     * The mTime value from Stats
+     */
+    statsMtime: number;
     /**
      * The file-system stack related to the file.
      */
@@ -103,8 +108,8 @@ export declare class DirsWatcher extends EventEmitter {
      * @param dirspec
      */
     watch(dirs: dirToWatch[] | string): Promise<void>;
-    onChange(fpath: string): Promise<void>;
-    onAdd(fpath: string): Promise<void>;
+    onChange(fpath: string, stats: Stats): Promise<void>;
+    onAdd(fpath: string, stats: Stats): Promise<void>;
     onUnlink(fpath: string): Promise<void>;
     onReady(): void;
     /**
@@ -114,7 +119,7 @@ export declare class DirsWatcher extends EventEmitter {
      * and the values are arrays of the names of the items contained in each directory.
      */
     getWatched(): Record<string, string[]>;
-    vpathForFSPath(fspath: string): VPathData;
+    vpathForFSPath(fspath: string, stats?: Stats): VPathData;
     stackForVPath(vpath: string): Promise<VPathData[]>;
     close(): Promise<void>;
 }
