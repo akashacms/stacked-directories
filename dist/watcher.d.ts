@@ -59,6 +59,11 @@ export type dirToWatch = {
      */
     mountPoint: string;
     /**
+     * Metadata object to use within the
+     * sub-hierarchy.
+     */
+    baseMetadata?: any;
+    /**
      * Optional array of strings containing globs for matching
      * files to ignore.
      */

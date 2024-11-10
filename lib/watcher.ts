@@ -155,6 +155,12 @@ export type dirToWatch = {
     mountPoint: string;
 
     /**
+     * Metadata object to use within the
+     * sub-hierarchy.
+     */
+    baseMetadata?: any;
+
+    /**
      * Optional array of strings containing globs for matching
      * files to ignore.
      */
@@ -183,6 +189,14 @@ export const isDirToWatch = (dir: any): dir is dirToWatch => {
         ) {
             return false;
         }
+    }
+
+    // It must at least have the 'mounted' field.
+    if (!(
+        'mounted' in dir
+     && typeof dir.mounted === 'string'
+    )) {
+        return false;
     }
 
     return true;
