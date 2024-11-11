@@ -387,6 +387,11 @@ export class DirsWatcher extends EventEmitter {
 
     Only emit if the change was to the front-most file */ 
     async onChange(fpath: string, stats: Stats): Promise<void> {
+        // Checking this early avoids printing the
+        // message if vpathForFSPath is undefined
+        if (this.toIgnore(fpath, stats)) {
+            return;
+        }
         const vpinfo = this.vpathForFSPath(fpath, stats);
         if (!vpinfo) {
             console.log(`onChange could not find mount point or vpath for ${fpath}`);
@@ -425,6 +430,11 @@ export class DirsWatcher extends EventEmitter {
 
     // Only emit if the add was the front-most file
     async onAdd(fpath: string, stats: Stats): Promise<void> {
+        // Checking this early avoids printing the
+        // message if vpathForFSPath is undefined
+        if (this.toIgnore(fpath, stats)) {
+            return;
+        }
         const vpinfo = this.vpathForFSPath(fpath, stats);
         if (!vpinfo) {
             console.log(`onAdd could not find mount point or vpath for ${fpath}`);
@@ -526,6 +536,36 @@ export class DirsWatcher extends EventEmitter {
      */
     getWatched() {
         if (this.#watcher) return this.#watcher.getWatched();
+    }
+
+    /**
+     * Determine if the fspath is to be ignored
+     * @param fspath 
+     * @param stats 
+     * @returns 
+     */
+    toIgnore(fspath: string, stats?: Stats): boolean {
+
+        for (const dir of this.dirs) {
+
+            // Check to see if we're supposed to ignore the file
+            if (dir.ignore) {
+                let ignores;
+                if (typeof dir.ignore === 'string') {
+                    ignores = [ dir.ignore ];
+                } else {
+                    ignores = dir.ignore;
+                }
+                let ignore = false;
+                for (const i of ignores) {
+                    if (minimatch(fspath, i)) ignore = true;
+                    // console.log(`dir.ignore ${fspath} ${i} => ${ignore}`);
+                }
+                if (ignore) return true;
+            }
+        }
+
+        return false;
     }
 
     vpathForFSPath(fspath: string, stats?: Stats): VPathData {

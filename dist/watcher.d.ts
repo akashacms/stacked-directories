@@ -124,6 +124,13 @@ export declare class DirsWatcher extends EventEmitter {
      * and the values are arrays of the names of the items contained in each directory.
      */
     getWatched(): Record<string, string[]>;
+    /**
+     * Determine if the fspath is to be ignored
+     * @param fspath
+     * @param stats
+     * @returns
+     */
+    toIgnore(fspath: string, stats?: Stats): boolean;
     vpathForFSPath(fspath: string, stats?: Stats): VPathData;
     stackForVPath(vpath: string): Promise<VPathData[]>;
     close(): Promise<void>;
