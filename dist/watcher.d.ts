@@ -1,5 +1,21 @@
 import { Stats } from 'node:fs';
 import { EventEmitter } from 'node:events';
+/**
+ * Configure the MIME package with additional content
+ * types.  This is meant to handle files for which
+ * no official registration has been made.  For example,
+ * AsciiDoc files are useful but do not have registered
+ * MIME types.
+ *
+ * per: https://asciidoctor.org/docs/faq/
+ * per: https://github.com/asciidoctor/asciidoctor/issues/2502
+ *
+ * For AsciiDoc, the mapping might be:
+ * {'text/x-asciidoc': ['adoc', 'asciidoc']}
+ *
+ * @param mapping
+ * @param force
+ */
 export declare function mimedefine(mapping: any, force?: boolean): void;
 export type VPathData = {
     /**
@@ -113,6 +129,11 @@ export declare class DirsWatcher extends EventEmitter {
      * @param dirspec
      */
     watch(dirs: dirToWatch[] | string): Promise<void>;
+    /**
+     * Emit Chokidar error events as a DirsWattcher error.
+     * @param error
+     */
+    onError(error: any): Promise<void>;
     onChange(fpath: string, stats: Stats): Promise<void>;
     onAdd(fpath: string, stats: Stats): Promise<void>;
     onUnlink(fpath: string): Promise<void>;

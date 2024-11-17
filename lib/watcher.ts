@@ -16,22 +16,23 @@ import * as util from 'node:util';
 import * as path from 'node:path';
 import { EventEmitter } from 'node:events';
 import { minimatch } from 'minimatch';
-import * as fastq from 'fastq';
-import type { queueAsPromised } from "fastq";
 
-
-// NOTE We should not do this here.  It had been copied over from
-// AkashaRender, but this is duplicative, and it's possible there
-// will be other users of DirsWatcher who do not want this.
-//
-// There doesn't seem to be an official registration
-// per: https://asciidoctor.org/docs/faq/
-// per: https://github.com/asciidoctor/asciidoctor/issues/2502
-// mime.define({'text/x-asciidoc': ['adoc', 'asciidoc']});
-//
-// Instead of defining MIME types here, we added a method "mimedefine"
-// to allow DirsWatcher users to define MIME types.
-
+/**
+ * Configure the MIME package with additional content
+ * types.  This is meant to handle files for which
+ * no official registration has been made.  For example,
+ * AsciiDoc files are useful but do not have registered
+ * MIME types.
+ * 
+ * per: https://asciidoctor.org/docs/faq/
+ * per: https://github.com/asciidoctor/asciidoctor/issues/2502
+ * 
+ * For AsciiDoc, the mapping might be:
+ * {'text/x-asciidoc': ['adoc', 'asciidoc']}
+ * 
+ * @param mapping 
+ * @param force 
+ */
 export function mimedefine(mapping, force ?: boolean) {
     mime.define(mapping, force);
 }
@@ -116,33 +117,6 @@ export const isVPathData = (vpinfo): vpinfo is VPathData => {
     return true;
 };
 
-type queueEvent = {
-    code: string;
-    fpath?: string;
-    stats?: Stats;
-};
-
-const isQueueEvent = (event): event is queueEvent => {
-    if (typeof event === 'undefined') return false;
-    if (typeof event !== 'object') return false;
-
-    if (typeof event.code === 'string'
-     && typeof event.fpath === 'string'
-     && (event.stats instanceof Stats)) {
-        return true;
-    }
-    if (typeof event.code === 'string'
-     && event.code === 'ready') {
-        return true;
-    }
-    if (typeof event.code === 'string'
-     && event.code === 'unlink'
-     && typeof event.fpath === 'string') {
-        return true;
-    }
-    return false;
-}
-
 export type dirToWatch = {
     /**
      * The filesystem path to "mount".
@@ -202,13 +176,6 @@ export const isDirToWatch = (dir: any): dir is dirToWatch => {
     return true;
 }
 
-// const _symb_dirs = Symbol('dirs');
-// const _symb_watcher = Symbol('watcher');
-// const _symb_name = Symbol('name');
-// const _symb_options = Symbol('options');
-// const _symb_cwd = Symbol('basedir');
-// const _symb_queue = Symbol('queue');
-
 export class DirsWatcher extends EventEmitter {
 
     #dirs: dirToWatch[];
@@ -216,7 +183,7 @@ export class DirsWatcher extends EventEmitter {
     #name: string;
     #options: ChokidarOptions;
     #basedir;
-    #queue;
+    // #queue;
 
     /**
      * @param name string giving the name for this watcher
@@ -227,31 +194,17 @@ export class DirsWatcher extends EventEmitter {
         this.#name = name;
         // TODO is there a need to make this customizable?
         this.#options = {
-            persistent: true, ignoreInitial: false, awaitWriteFinish: true, alwaysStat: true
+            persistent: true, ignoreInitial: false, awaitWriteFinish: true, alwaysStat: true,
+            ignored:
+                (_fspath: string, stats?: Stats): boolean => {
+                if (this.toIgnore) {
+                    return this.toIgnore(_fspath, stats);
+                } else {
+                    return false;
+                }
+            }
         };
         this.#basedir = undefined;
-        const that = this;
-        const q: queueAsPromised<queueEvent> = fastq.promise(
-            async function(event: queueEvent) {
-                if (!isQueueEvent(event)) {
-                    throw new Error(`INTERNAL ERROR not a queueEvent ${util.inspect(event)}`);
-                }
-                if (event.code === 'change') {
-                    await that.onChange(event.fpath, event.stats);
-                } else if (event.code === 'add') {
-                    await that.onAdd(event.fpath, event.stats);
-                } else if (event.code === 'unlink') {
-                    await that.onUnlink(event.fpath);
-                } else if (event.code === 'ready') {
-                    await that.onReady();
-                }
-            }, 1);
-        this.#queue = q;
-        this.#queue.error(function(err, task) {
-            if (err) {
-                console.error(`DirsWatcher ${name} ${task.code} ${task.fpath} caught error ${err}`);
-            }
-        });
     }
 
     /**
@@ -298,7 +251,8 @@ export class DirsWatcher extends EventEmitter {
             dirs = [ {
                 mounted: dirs, mountPoint: '/'
             } ];
-        } else if (typeof dirs === 'object' && !Array.isArray(dirs)) {
+        } else if (typeof dirs === 'object'
+               && !Array.isArray(dirs)) {
             if (!isDirToWatch(dirs)) {
                 throw new Error(`watch - directory spec not a dirToWatch - ${util.inspect(dirs)}`);
             }
@@ -328,30 +282,34 @@ export class DirsWatcher extends EventEmitter {
 
         this.#watcher = chokidar.watch(towatch, this.#options);
 
-        // In the event handlers, we create the FileInfo object matching
-        // the path.  The FileInfo is matched to a _symb_dirs entry.
-        // If the _symb_dirs entry has <em>ignore</em> or <em>include</em>
-        // fields, the patterns in those fields are used to determine whether
-        // to include or ignore this file.  If we are to ignore it, then
-        // fileInfo returns undefined.  Hence, in each case we test whether
-        // <em>info</em> has a value before emitting the event.
-        //
-        // All this function does is to receive events from Chokidar,
-        // construct FileInfo objects, and emit matching events.
+        // Send events from chokidar into the onXYZZY
+        // handler functions.  These perform additional
+        // processing which in turn is emitted from
+        // the DirsWatcher object.
 
-        // const watcher_name = this.name;
-
+        const that = this;
         this.#watcher
             .on('change', async (fpath, stats) => {
-                this.#queue.push(<queueEvent>{
-                    code: 'change', fpath, stats
-                });
+
+                try {
+                    await that.onChange(fpath, stats);
+                } catch (err: any) {
+                    this.emit('error', this.name, fpath, `DirsWatcher watcher ${this.name} event=change ${fpath} caught ${err.message}`);
+                }
+                // this.#queue.push(<queueEvent>{
+                //     code: 'change', fpath, stats
+                // });
                 // console.log(`watcher ${watcher_name} change ${fpath}`);
             })
             .on('add', async (fpath, stats) => {
-                this.#queue.push(<queueEvent>{
-                    code: 'add', fpath, stats
-                });
+                try {
+                    await that.onAdd(fpath, stats);
+                } catch (err: any) {
+                    this.emit('error', this.name, fpath, `DirsWatcher watcher ${this.name} event=add ${fpath} caught ${err.message}`);
+                }
+                // this.#queue.push(<queueEvent>{
+                //     code: 'add', fpath, stats
+                // });
                 // console.log(`watcher ${watcher_name} add ${fpath}`);
             })
             /* .on('addDir', async (fpath, stats) => { 
@@ -360,9 +318,15 @@ export class DirsWatcher extends EventEmitter {
                 // ?? this.emit('addDir', info);
             }) */
             .on('unlink', async fpath => {
-                this.#queue.push(<queueEvent>{
-                    code: 'unlink', fpath
-                });
+                // this.#queue.push(<queueEvent>{
+                //     code: 'unlink', fpath
+                // });
+                try {
+                    await that.onUnlink(fpath);
+                } catch (err: any) {
+                    // console.warn(`EMITTING ERROR DirsWatcher watcher ${this.name} event=unlink ${fpath} caught ${err.message}`);
+                    this.emit('error', this.name, fpath, `DirsWatcher watcher ${this.name} event=unlink ${fpath} caught ${err.message}`);
+                }
                 // console.log(`watcher ${watcher_name} unlink ${fpath}`);
             })
             /* .on('unlinkDir', async fpath => { 
@@ -370,11 +334,15 @@ export class DirsWatcher extends EventEmitter {
                 // ?? console.log(`DirsWatcher unlinkDir ${fpath}`);
                 // ?? this.emit('unlinkDir', info);
             }) */
-            .on('ready', () => {
-                this.#queue.push(<queueEvent>{
-                    code: 'ready'
-                });
+            .on('ready', async () => {
+                // this.#queue.push(<queueEvent>{
+                //     code: 'ready'
+                // });
+                await that.onReady();
                 // console.log(`watcher ${watcher_name} ready`);
+            })
+            .on('error', async (error) => {
+                await that.onError(error);
             });
 
         // this.isReady = new Promise((resolve, reject) => {
@@ -383,15 +351,24 @@ export class DirsWatcher extends EventEmitter {
         // console.log(this.isReady);
     }
 
+    /**
+     * Emit Chokidar error events as a DirsWattcher error.
+     * @param error 
+     */
+    async onError(error) {
+        console.warn(`DirsWatcher ${this.name} ERROR `, error);
+        this.emit('error', this.name, undefined, `DirsWatcher ${this.name} ERROR ${error}`);
+    }
+
     /* Calculate the stack for a filesystem path
 
     Only emit if the change was to the front-most file */ 
     async onChange(fpath: string, stats: Stats): Promise<void> {
         // Checking this early avoids printing the
         // message if vpathForFSPath is undefined
-        if (this.toIgnore(fpath, stats)) {
-            return;
-        }
+        // if (this.toIgnore(fpath, stats)) {
+        //     return;
+        // }
         const vpinfo = this.vpathForFSPath(fpath, stats);
         if (!vpinfo) {
             console.log(`onChange could not find mount point or vpath for ${fpath}`);
@@ -432,9 +409,9 @@ export class DirsWatcher extends EventEmitter {
     async onAdd(fpath: string, stats: Stats): Promise<void> {
         // Checking this early avoids printing the
         // message if vpathForFSPath is undefined
-        if (this.toIgnore(fpath, stats)) {
-            return;
-        }
+        // if (this.toIgnore(fpath, stats)) {
+        //     return;
+        // }
         const vpinfo = this.vpathForFSPath(fpath, stats);
         if (!vpinfo) {
             console.log(`onAdd could not find mount point or vpath for ${fpath}`);
@@ -484,19 +461,24 @@ export class DirsWatcher extends EventEmitter {
     /* Only emit if it was the front-most file deleted
     If there is a file uncovered by this, then emit an add event for that */
     async onUnlink(fpath: string): Promise<void> {
+        // console.log(`DirsWatcher onUnlink ${fpath}`);
         const vpinfo = this.vpathForFSPath(fpath);
         if (!vpinfo) {
             console.log(`onUnlink could not find mount point or vpath for ${fpath}`);
             return;
         }
+        // console.log(`DirsWatcher onUnlink vpathData ${fpath} ==>`, vpinfo);
         const stack: VPathData[] = await this.stackForVPath(vpinfo.vpath);
+        // console.log(`DirsWatcher onUnlink stack ${fpath} ==>`, stack);
         if (stack.length === 0) {
             /* If no files remain in the stack for this virtual path, then
              * we must declare it unlinked.
              */
             if (!isVPathData(vpinfo)) {
+                // console.error(`Invalid VPathData ${util.inspect(vpinfo)}`);
                 throw new Error(`Invalid VPathData ${util.inspect(vpinfo)}`);
             }
+            // console.log(`DirsWatcher onUnlink emit unlink ${this.name} ${vpinfo.fspath}`);
             this.emit('unlink', this.name, vpinfo);
         } else {
             /* On the other hand, if there is an entry we shouldn't send
@@ -514,8 +496,10 @@ export class DirsWatcher extends EventEmitter {
                 stack
             };
             if (!isVPathData(toemit)) {
+                // console.error(`Invalid VPathData ${util.inspect(toemit)}`);
                 throw new Error(`Invalid VPathData ${util.inspect(toemit)}`);
             }
+            // console.log(`DirsWatcher onUnlink emit change ${this.name} ${toemit.fspath}`);
             this.emit('change', this.name, toemit);
         }
         // let info = this.fileInfo(fpath, undefined);
@@ -548,6 +532,22 @@ export class DirsWatcher extends EventEmitter {
 
         for (const dir of this.dirs) {
 
+            // Check if this dirs entry corresponds
+            // to the fspath
+
+            // This will strip off a leading slash,
+            // and ensure that it ends with a slash.
+
+            const m = dir.mounted.startsWith('/')
+                    ? dir.mounted.substring(1)
+                    : dir.mounted;
+            const m2 = m.endsWith('/')
+                     ? m
+                     : (m+'/');
+            if (!fspath.startsWith(m2)) {
+                continue;
+            }
+
             // Check to see if we're supposed to ignore the file
             if (dir.ignore) {
                 let ignores;
@@ -561,7 +561,10 @@ export class DirsWatcher extends EventEmitter {
                     if (minimatch(fspath, i)) ignore = true;
                     // console.log(`dir.ignore ${fspath} ${i} => ${ignore}`);
                 }
-                if (ignore) return true;
+                if (ignore) {
+                    // console.log(`toIgnore ignoring ${fspath} ${util.inspect(this.dirs)}`);
+                    return true;
+                }
             }
         }
 
@@ -618,8 +621,13 @@ export class DirsWatcher extends EventEmitter {
                     // Use the sync version to
                     // maintain this function
                     // as non-async
-                    let stats = fsStatSync(ret.fspath);
-                    ret.statsMtime = stats.mtimeMs;
+                    try {
+                        let stats = fsStatSync(ret.fspath);
+                        ret.statsMtime = stats.mtimeMs;
+                    } catch (err: any) {
+                        // console.log(`VPathData ignoring STATS error ${ret.fspath} - ${err.message}`);
+                        ret.statsMtime = undefined;
+                    }
                 }
                 if (!isVPathData(ret)) {
                     throw new Error(`Invalid VPathData ${util.inspect(ret)}`);

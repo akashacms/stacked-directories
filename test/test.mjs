@@ -3,7 +3,9 @@ import util from 'util';
 import { promises as fs } from 'fs';
 import Chai from 'chai';
 const assert = Chai.assert;
-import { DirsWatcher, mimedefine } from '../esm/watcher.mjs';
+import {
+    DirsWatcher, mimedefine
+} from '../dist/watcher.js';
 
 /* import * as Watcher from '../dist/watcher.js';
 
@@ -673,7 +675,9 @@ describe('Documents dual with mounted with ignored files', function() {
                         '**/*.html.ejs'
                     ]
                 },
-                { mounted: 'documents-epub-skeleton', mountPoint: 'epub' }
+                {
+                    mounted: 'documents-epub-skeleton', mountPoint: 'epub'
+                }
             ]);
             ready = await new Promise((resolve, reject) => {
                 try {
@@ -810,18 +814,19 @@ describe('Documents dual with mounted with ignored files', function() {
         }
 
         // console.log(found);
-
         assert.notOk(found);
 
         // In this section we want to make sure it is included.
+        found = undefined;
         for (let event of events) {
-            // console.log(`NOT html.ejs ${event.info.vpath} ${typeof event.info.vpath}`);
+            // console.log(`is epub/toc.html.ejs? ${event.info.vpath} ${typeof event.info.vpath}`);
             if (event.info.vpath === 'epub/toc.html.ejs') {
                 found = event;
                 break;
             }
         }
 
+        // console.log(found);
         assert.isOk(found);
     });
 
@@ -1132,34 +1137,48 @@ describe('Change and Unlink events post-Ready', function() {
             // mimeDefines(watcher);
 
             watcher.on('change', (name, info) => {
-                // console.log(`watcher on 'change' for ${info.vpath}`);
+                // console.log(`watcher on 'change' for ${name} ${info.vpath}`);
                 events.push({
                     event: 'change',
                     name, info
                 });
             });
             watcher.on('add', (name, info) => {
-                // console.log(`watcher on 'add' for ${info.vpath}`);
+                // console.log(`watcher on 'add' for ${name} ${info.vpath}`);
                 events.push({
                     event: 'add',
                     name, info
                 });
             });
             watcher.on('unlink', (name, info) => {
-                // console.log(`watcher on 'unlink' for ${info.vpath}`);
+                // console.log(`watcher on 'unlink' for ${name} ${info.vpath}`);
                 events.push({
                     event: 'unlink',
                     name, info
                 });
             });
+            watcher.on('error', (name, fpath, error) => {
+                // console.log(`watcher on 'error' for ${name} ${fpath} ${error}`);
+                events.push({
+                    event: 'error',
+                    name, fpath, error
+                });
+            });
             await watcher.watch([
-                { mounted: 'partials-example',      mountPoint: '/' },
-                { mounted: 'partials-bootstrap',    mountPoint: '/' },
-                { mounted: 'partials-booknav',      mountPoint: '/' },
-                { mounted: 'partials-footnotes',    mountPoint: '/' },
-                { mounted: 'partials-embeddables',  mountPoint: '/' },
-                { mounted: 'partials-blog-podcast', mountPoint: '/' },
-                { mounted: 'partials-base',         mountPoint: '/' },
+                { mounted: 'partials-example',
+                  mountPoint: '/' },
+                { mounted: 'partials-bootstrap',
+                  mountPoint: '/' },
+                { mounted: 'partials-booknav',
+                  mountPoint: '/' },
+                { mounted: 'partials-footnotes',
+                  mountPoint: '/' },
+                { mounted: 'partials-embeddables',
+                  mountPoint: '/' },
+                { mounted: 'partials-blog-podcast',
+                  mountPoint: '/' },
+                { mounted: 'partials-base',
+                  mountPoint: '/' },
             ]);
             ready = await new Promise((resolve, reject) => {
                 try {
