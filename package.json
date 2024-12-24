@@ -1,6 +1,6 @@
 {
   "name": "@akashacms/stacked-dirs",
-  "version": "0.8.3",
+  "version": "0.9.0",
   "description": "Automatically watch for changes in stacked directories",
   "bugs": "https://github.com/akashacms/stacked-directories/issues",
   "homepage": "https://akashacms.github.io/stacked-directories/",
@@ -21,13 +21,13 @@
     "watchFile",
     "watching",
     "cms",
-    "website"
+    "website",
+    "chokidar"
   ],
   "author": "David Herron <david@davidherron.com>",
   "license": "ISC",
   "dependencies": {
     "chokidar": "^4.0.x",
-    "fastq": "^1.17.x",
     "mime": "^4.x",
     "minimatch": "^10.x"
   },
