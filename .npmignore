@@ -2,3 +2,5 @@ guide
 package-lock.json
 test
 example
+node_modules
+tsconfig.json
