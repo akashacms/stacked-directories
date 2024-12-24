@@ -28,8 +28,8 @@
   "license": "ISC",
   "dependencies": {
     "chokidar": "^4.0.x",
-    "mime": "^4.x",
-    "minimatch": "^10.x"
+    "micromatch": "^4.0.8",
+    "mime": "^4.x"
   },
   "devDependencies": {
     "@types/minimatch": "^5.x",

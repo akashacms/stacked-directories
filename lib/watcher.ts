@@ -15,7 +15,7 @@ const mime = new Mime(standardTypes, otherTypes);
 import * as util from 'node:util';
 import * as path from 'node:path';
 import { EventEmitter } from 'node:events';
-import { minimatch } from 'minimatch';
+import micromatch from 'micromatch';
 
 /**
  * Configure the MIME package with additional content
@@ -558,7 +558,7 @@ export class DirsWatcher extends EventEmitter {
                 }
                 let ignore = false;
                 for (const i of ignores) {
-                    if (minimatch(fspath, i)) ignore = true;
+                    if (micromatch.isMatch(fspath, i)) ignore = true;
                     // console.log(`dir.ignore ${fspath} ${i} => ${ignore}`);
                 }
                 if (ignore) {
@@ -584,7 +584,7 @@ export class DirsWatcher extends EventEmitter {
                 }
                 let ignore = false;
                 for (const i of ignores) {
-                    if (minimatch(fspath, i)) ignore = true;
+                    if (micromatch.isMatch(fspath, i)) ignore = true;
                     // console.log(`dir.ignore ${fspath} ${i} => ${ignore}`);
                 }
                 if (ignore) continue;
