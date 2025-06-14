@@ -7,6 +7,9 @@
   "main": "./dist/watcher.js",
   "types": "./dist/watcher.d.ts",
   "type": "module",
+  "engines": {
+    "node": ">=24.x"
+  },
   "scripts": {
     "build": "npx tsc",
     "watch": "tsc --watch",
@@ -33,8 +36,8 @@
   },
   "devDependencies": {
     "@types/minimatch": "^5.x",
-    "@types/node": "^22.x",
+    "@types/node": "^24.x",
     "nodemon": "^3.1.x",
-    "typescript": "^5.6.x"
+    "typescript": "^5.8.x"
   }
 }
